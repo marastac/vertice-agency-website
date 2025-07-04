@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://verticeagency.com/sitemap.xml
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+
+Crawl-delay: 1
