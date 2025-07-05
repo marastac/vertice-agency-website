@@ -1,4 +1,13 @@
-const Hero = () => {
+import { memo } from 'react'
+
+const Hero = memo(() => {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="home" className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-24 pb-20 md:pt-32 md:pb-28 lg:pt-40 lg:pb-32">
       <div className="container">
@@ -61,21 +70,21 @@ const Hero = () => {
 
               {/* Botones CTA */}
               <div className="flex flex-col items-center justify-center space-y-6 sm:flex-row sm:space-x-8 sm:space-y-0">
-                <a
-                  href="#contact"
+                <button
+                  onClick={() => scrollToSection('contact')}
                   className="group inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1"
                 >
                   Agenda tu Auditoría Gratuita con IA
                   <span className="text-xl transition-transform group-hover:translate-x-1">→</span>
-                </a>
+                </button>
                 
-                <a
-                  href="#servicios"
+                <button
+                  onClick={() => scrollToSection('servicios')}
                   className="group inline-flex items-center gap-3 rounded-2xl border-3 border-gray-300 bg-white px-10 py-5 text-lg font-bold text-gray-900 shadow-lg transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl hover:-translate-y-1"
                 >
                   Ver Cómo Funciona la IA
                   <span className="text-xl transition-transform group-hover:translate-x-1">→</span>
-                </a>
+                </button>
               </div>
 
               {/* Indicador de confianza */}
@@ -110,6 +119,8 @@ const Hero = () => {
       </div>
     </section>
   );
-};
+});
+
+Hero.displayName = 'Hero';
 
 export default Hero;

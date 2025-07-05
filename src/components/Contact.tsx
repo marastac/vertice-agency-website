@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
-const Contact = () => {
+const Contact = memo(() => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,14 +12,15 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -83,7 +84,27 @@ const Contact = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData]);
+
+  const handleWhatsAppClick = useCallback(() => {
+    // Track WhatsApp click
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'whatsapp_click', {
+        contact_method: 'whatsapp',
+        page_location: window.location.href
+      });
+    }
+  }, []);
+
+  const handleEmailClick = useCallback(() => {
+    // Track email click
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'email_click', {
+        contact_method: 'email',
+        page_location: window.location.href
+      });
+    }
+  }, []);
 
   return (
     <section id="contact" className="relative bg-gradient-to-br from-blue-50 via-purple-50 to-white py-20 md:py-28">
@@ -287,15 +308,7 @@ const Contact = () => {
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duration-300"
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => {
-                      // Track WhatsApp click
-                      if (typeof window !== 'undefined' && (window as any).gtag) {
-                        (window as any).gtag('event', 'whatsapp_click', {
-                          contact_method: 'whatsapp',
-                          page_location: window.location.href
-                        });
-                      }
-                    }}
+                    onClick={handleWhatsAppClick}
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                       <span className="text-xl">📱</span>
@@ -308,15 +321,7 @@ const Contact = () => {
                   <a 
                     href="mailto:hola@verticeagency.com"
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duration-300"
-                    onClick={() => {
-                      // Track email click
-                      if (typeof window !== 'undefined' && (window as any).gtag) {
-                        (window as any).gtag('event', 'email_click', {
-                          contact_method: 'email',
-                          page_location: window.location.href
-                        });
-                      }
-                    }}
+                    onClick={handleEmailClick}
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                       <span className="text-xl">📧</span>
@@ -334,6 +339,8 @@ const Contact = () => {
       </div>
     </section>
   );
-};
+});
+
+Contact.displayName = 'Contact';
 
 export default Contact;

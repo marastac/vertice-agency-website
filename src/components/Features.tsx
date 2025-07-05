@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
-const Features = () => {
+const Features = memo(() => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
 
   const services = [
     {
@@ -164,18 +171,20 @@ const Features = () => {
             <p className="text-xl mb-8 text-blue-100">
               Descubre cómo nuestras soluciones de IA pueden transformar tu negocio
             </p>
-            <a
-              href="#contact"
+            <button
+              onClick={() => scrollToSection('contact')}
               className="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1"
             >
               Descubre cómo podemos ayudarte
               <span className="text-xl">🚀</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>
     </section>
   );
-};
+});
+
+Features.displayName = 'Features';
 
 export default Features;

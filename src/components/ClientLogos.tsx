@@ -1,4 +1,6 @@
-const ClientLogos = () => {
+import { memo } from 'react'
+
+const ClientLogos = memo(() => {
   const clients = [
     { name: "TechStartup", category: "Startup" },
     { name: "Creative Agency", category: "Agencia" }, 
@@ -171,6 +173,8 @@ const ClientLogos = () => {
       </div>
     </section>
   );
-};
+});
+
+ClientLogos.displayName = 'ClientLogos';
 
 export default ClientLogos;
