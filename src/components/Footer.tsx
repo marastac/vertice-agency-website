@@ -1,13 +1,20 @@
-const Footer = () => {
-  const scrollToSection = (sectionId: string) => {
+import { memo, useCallback } from 'react';
+
+const Footer = memo(() => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
+
+  const openExternalLink = useCallback((url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, []);
 
   const currentYear = new Date().getFullYear();
 
+  // Memoizar arrays estáticos
   const socialLinks = [
     { name: 'Facebook', icon: '📘', url: '#', color: 'hover:text-blue-400' },
     { name: 'Instagram', icon: '📷', url: '#', color: 'hover:text-pink-400' },
@@ -89,6 +96,10 @@ const Footer = () => {
                       href={social.url}
                       className={`w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl transition-all duration-300 hover:bg-white/20 backdrop-blur-sm ${social.color} hover:scale-110 hover:-translate-y-1`}
                       title={social.name}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        openExternalLink(social.url);
+                      }}
                     >
                       {social.icon}
                     </a>
@@ -113,7 +124,7 @@ const Footer = () => {
                   {quickLinks.map((link) => (
                     <li key={link.name}>
                       <button
-                        onClick={() => link.id ? scrollToSection(link.id) : window.open(link.url)}
+                        onClick={() => link.id ? scrollToSection(link.id) : openExternalLink(link.url!)}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
                       >
                         {link.name}
@@ -220,6 +231,8 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer;

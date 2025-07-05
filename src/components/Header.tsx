@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback } from 'react';
 
-const Header = () => {
+const Header = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -9,17 +9,30 @@ const Header = () => {
       setIsScrolled(window.scrollY > 20);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
-  };
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+  }, []);
+
+  // Memoizar los navigation items
+  const navigationItems = [
+    { name: 'Inicio', id: 'home' },
+    { name: 'Servicios', id: 'servicios' },
+    { name: 'Nosotros', id: 'nosotros' },
+    { name: 'Casos de Éxito', id: 'casos' },
+    { name: 'Contacto', id: 'contact' }
+  ];
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -39,13 +52,7 @@ const Header = () => {
 
           {/* Navigation - Desktop */}
           <nav className="hidden lg:flex items-center space-x-8">
-            {[
-              { name: 'Inicio', id: 'home' },
-              { name: 'Servicios', id: 'servicios' },
-              { name: 'Nosotros', id: 'nosotros' },
-              { name: 'Casos de Éxito', id: 'casos' },
-              { name: 'Contacto', id: 'contact' }
-            ].map((item) => (
+            {navigationItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
@@ -73,7 +80,8 @@ const Header = () => {
           {/* Mobile menu button */}
           <button 
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={toggleMobileMenu}
+            aria-label="Toggle mobile menu"
           >
             <div className={`w-6 h-0.5 bg-gray-600 mb-1.5 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
             <div className={`w-6 h-0.5 bg-gray-600 mb-1.5 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
@@ -86,13 +94,7 @@ const Header = () => {
           isMobileMenuOpen ? 'max-h-96 pb-6' : 'max-h-0'
         }`}>
           <nav className="flex flex-col space-y-4 pt-4 border-t border-gray-200">
-            {[
-              { name: 'Inicio', id: 'home' },
-              { name: 'Servicios', id: 'servicios' },
-              { name: 'Nosotros', id: 'nosotros' },
-              { name: 'Casos de Éxito', id: 'casos' },
-              { name: 'Contacto', id: 'contact' }
-            ].map((item) => (
+            {navigationItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
@@ -112,6 +114,8 @@ const Header = () => {
       </div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;
