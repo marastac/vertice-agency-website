@@ -6,7 +6,7 @@ import Contact from './components/Contact'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { initAnalytics } from './utils/analytics'
-import './App.css'
+// import './App.css'  ← ELIMINA ESTA LÍNEA
 
 function App() {
   useEffect(() => {
