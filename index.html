@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
+  <!-- Preconnect para recursos externos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://connect.facebook.net">
+  
   <!-- SEO Meta Tags -->
   <title>Vértice Agency - Agencia de Marketing Digital con IA | Automatización y Crecimiento</title>
   <meta name="description" content="Transformamos tu negocio con IA y automatización. Aumenta tus ventas hasta 340% en 90 días. Auditoría gratuita incluida. Especialistas en marketing digital con inteligencia artificial." />
@@ -29,9 +35,48 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="canonical" href="https://verticeagency.com" />
   
+  <!-- Critical CSS inline para faster render -->
+  <style>
+    /* Critical CSS - Solo above the fold */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+    
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e7eb;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
   <!-- Google Analytics 4 -->
-  <!-- 🔥 REEMPLAZA 'G-XXXXXXXXXX' con tu ID real -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -40,7 +85,6 @@
   </script>
   
   <!-- Facebook Pixel -->
-  <!-- 🔥 REEMPLAZA 'XXXXXXXXXX' con tu ID real -->
   <script>
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -55,7 +99,6 @@
   </script>
   
   <!-- LinkedIn Insight Tag -->
-  <!-- 🔥 REEMPLAZA 'XXXXXX' con tu ID real -->
   <script type="text/javascript">
     _linkedin_partner_id = "XXXXXX";
     window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
@@ -97,7 +140,28 @@
   </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Loading screen inicial -->
+    <div class="loading-screen">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
+  
+  <!-- Remove loading screen cuando la app carga -->
+  <script>
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        const loadingScreen = document.querySelector('.loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.5s ease-out';
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }
+      }, 100);
+    });
+  </script>
 </body>
 </html>
