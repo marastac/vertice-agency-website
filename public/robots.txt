@@ -1,7 +1,8 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://verticeagency.com/sitemap.xml
+# Sitemap location - URL CORRECTA
+Sitemap: https://vertice-agency-website-git-main-marios-projects-166cc110.vercel.app/sitemap.xml
 
 User-agent: Googlebot
 Allow: /
@@ -9,8 +10,12 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+# Disallow admin and build files
 Disallow: /admin/
 Disallow: /private/
+Disallow: /_next/
+Disallow: /assets/
 Disallow: /*.json$
 
+# Crawl-delay for politeness
 Crawl-delay: 1
