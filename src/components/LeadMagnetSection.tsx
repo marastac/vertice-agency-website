@@ -441,4 +441,6 @@ const LeadMagnetSection = memo(() => {
 });
 
 LeadMagnetModal.displayName = 'LeadMagnetModal';
-LeadMagnetSection.displayName = 'LeadMag
+LeadMagnetSection.displayName = 'LeadMagnetSection';
+
+export default LeadMagnetSection;
