@@ -1,181 +1,47 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Preconnect para recursos externos -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://www.googletagmanager.com">
-  <link rel="preconnect" href="https://connect.facebook.net">
-  
-  <!-- SEO Meta Tags -->
-  <title>Vértice Agency - Agencia de Marketing Digital con IA | Automatización y Crecimiento</title>
-  <meta name="description" content="Transformamos tu negocio con IA y automatización. Aumenta tus ventas hasta 340% en 90 días. Auditoría gratuita incluida. Especialistas en marketing digital con inteligencia artificial." />
-  <meta name="keywords" content="marketing digital, inteligencia artificial, automatización, chatbots, leads, ventas, agency, perú, españa" />
-  <meta name="author" content="Vértice Agency" />
-  <meta name="robots" content="index, follow" />
-  
-  <!-- Open Graph Meta Tags -->
-  <meta property="og:title" content="Vértice Agency - Marketing Digital con IA" />
-  <meta property="og:description" content="Transformamos tu negocio con IA y automatización. Aumenta tus ventas hasta 340% en 90 días." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://verticeagency.com" />
-  <meta property="og:image" content="https://verticeagency.com/og-image.jpg" />
-  <meta property="og:site_name" content="Vértice Agency" />
-  <meta property="og:locale" content="es_ES" />
-  
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Vértice Agency - Marketing Digital con IA" />
-  <meta name="twitter:description" content="Transformamos tu negocio con IA y automatización. Aumenta tus ventas hasta 340% en 90 días." />
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="canonical" href="https://verticeagency.com" />
-  
-  <!-- Critical CSS inline para faster render -->
-  <style>
-    /* Critical CSS - Solo above the fold */
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #1f2937;
-      line-height: 1.6;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    .loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
+    <!-- SEO Meta Tags -->
+    <title>Vértice Agency - Marketing Digital con IA | Automatización y Leads</title>
+    <meta name="description" content="Transformamos coaches, consultores y creadores de contenido en Perú y España con estrategias de IA, automatización inteligente y marketing digital que generan leads cualificados." />
+    <meta name="keywords" content="marketing digital, inteligencia artificial, automatización, chatbots, leads, ventas, agency, perú, españa" />
     
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e5e7eb;
-      border-top: 3px solid #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://verticeagency.com" />
+    <meta property="og:title" content="Vértice Agency - Marketing Digital con IA" />
+    <meta property="og:description" content="Escala tu negocio online con inteligencia artificial. Estrategias innovadoras para coaches, consultores y creadores de contenido." />
     
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-  
-  <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-YN77ENMF5B');
-  </script>
-  
-<!-- Facebook Pixel CON TU ID REAL -->
-<script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-  
-  // TU PIXEL ID REAL
-  fbq('init', '1419230625849117'); 
-  fbq('track', 'PageView');
-  
-  // Eventos adicionales para mejores conversiones
-  fbq('track', 'ViewContent', {
-    content_name: 'Vértice Agency Landing',
-    content_category: 'Marketing Agency'
-  });
-</script>
-
-<!-- Noscript para Facebook Pixel -->
-<noscript>
-  <img height="1" width="1" style="display:none"
-       src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1"/>
-</noscript>
-  
-  <!-- LinkedIn Insight Tag -->
-  <script type="text/javascript">
-    _linkedin_partner_id = "XXXXXX";
-    window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
-    window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-  </script>
-  <script type="text/javascript">
-    (function(l) {
-      if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
-      window.lintrk.q=[]}
-      var s = document.getElementsByTagName("script")[0];
-      var b = document.createElement("script");
-      b.type = "text/javascript";b.async = true;
-      b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
-      s.parentNode.insertBefore(b, s);
-    })(window.lintrk);
-  </script>
-  
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Vértice Agency",
-    "url": "https://verticeagency.com",
-    "description": "Agencia de marketing digital especializada en inteligencia artificial y automatización",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+51-907-001-449",
-      "contactType": "customer service",
-      "areaServed": ["PE", "ES"],
-      "availableLanguage": "Spanish"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "addressCountry": "PE",
-      "addressLocality": "Lima"
-    }
-  }
-  </script>
-</head>
-<body>
-  <div id="root">
-    <!-- Loading screen inicial -->
-    <div class="loading-screen">
-      <div class="loading-spinner"></div>
-    </div>
-  </div>
-  <script type="module" src="/src/main.tsx"></script>
-  
-  <!-- Remove loading screen cuando la app carga -->
-  <script>
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        const loadingScreen = document.querySelector('.loading-screen');
-        if (loadingScreen) {
-          loadingScreen.style.opacity = '0';
-          loadingScreen.style.transition = 'opacity 0.5s ease-out';
-          setTimeout(() => {
-            loadingScreen.remove();
-          }, 500);
-        }
-      }, 100);
-    });
-  </script>
-</body>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YN77ENMF5B');
+    </script>
+    
+    <!-- Facebook Pixel - ÚNICA VERSIÓN -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1419230625849117');
+      fbq('track', 'PageView');
+    </script>
+    
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
