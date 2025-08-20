@@ -29,7 +29,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Guía Completa: Branding Digital con IA 2025',
     description: 'Descubre cómo crear una marca memorable usando inteligencia artificial y herramientas automatizadas.',
     icon: '🎨',
-    downloadUrl: '#', // URL real del PDF
+    downloadUrl: 'https://drive.google.com/file/d/1ziAIIPewct4cIq5sZXA6ds0Gp7nX1hm9/view?usp=drive_link', // URL real del PDF
     fileType: 'PDF',
     fileSize: '2.8 MB',
     benefits: [
@@ -44,7 +44,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Checklist: Optimización de Conversiones con IA',
     description: 'Lista de verificación completa para maximizar tus conversiones usando automatización inteligente.',
     icon: '📋',
-    downloadUrl: '#',
+    downloadUrl: 'https://drive.google.com/file/d/1TS6vU4WgeqPHp80LRdAQ2_1rWtAV1yRz/view?usp=drive_link',
     fileType: 'PDF',
     fileSize: '1.5 MB',
     benefits: [
@@ -59,7 +59,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Template: Brief Creativo para Proyectos de IA',
     description: 'Plantilla profesional para planificar y ejecutar proyectos de marketing digital con IA.',
     icon: '📝',
-    downloadUrl: '#',
+    downloadUrl: 'https://drive.google.com/file/d/1BvowhgodatIK7ULlgDFaeEh3KYnuuzM9/view?usp=drive_link',
     fileType: 'DOCX + PDF',
     fileSize: '850 KB',
     benefits: [
