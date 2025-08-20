@@ -29,7 +29,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Guía Completa: Branding Digital con IA 2025',
     description: 'Descubre cómo crear una marca memorable usando inteligencia artificial y herramientas automatizadas.',
     icon: '🎨',
-    downloadUrl: 'https://drive.google.com/file/d/1ziAIIPewct4cIq5sZXA6ds0Gp7nX1hm9/view?usp=drive_link', // URL real del PDF
+    downloadUrl: 'https://drive.google.com/uc?export=download&id=1ziAIIPewct4cIq5sZXA6ds0Gp7nX1hm9', // URL real del PDF
     fileType: 'PDF',
     fileSize: '2.8 MB',
     benefits: [
@@ -44,7 +44,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Checklist: Optimización de Conversiones con IA',
     description: 'Lista de verificación completa para maximizar tus conversiones usando automatización inteligente.',
     icon: '📋',
-    downloadUrl: 'https://drive.google.com/file/d/1TS6vU4WgeqPHp80LRdAQ2_1rWtAV1yRz/view?usp=drive_link',
+    downloadUrl: 'https://drive.google.com/uc?export=download&id=1TS6vU4WgeqPHp80LRdAQ2_1rWtAV1yRz',
     fileType: 'PDF',
     fileSize: '1.5 MB',
     benefits: [
@@ -59,7 +59,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Template: Brief Creativo para Proyectos de IA',
     description: 'Plantilla profesional para planificar y ejecutar proyectos de marketing digital con IA.',
     icon: '📝',
-    downloadUrl: 'https://drive.google.com/file/d/1BvowhgodatIK7ULlgDFaeEh3KYnuuzM9/view?usp=drive_link',
+    downloadUrl: 'https://drive.google.com/uc?export=download&id=1BvowhgodatIK7ULlgDFaeEh3KYnuuzM9',
     fileType: 'DOCX + PDF',
     fileSize: '850 KB',
     benefits: [
@@ -139,9 +139,13 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
 
         // Simular descarga después de 2 segundos
         setTimeout(() => {
-          // Aquí iría la lógica real de descarga
-          console.log(`Descargando: ${magnet.title}`);
-          // window.open(magnet.downloadUrl, '_blank');
+          const link = document.createElement('a');
+          link.href = magnet.downloadUrl;
+          link.download = magnet.title;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         }, 2000);
 
       } else {
@@ -321,7 +325,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Descargar Gratis
+                      Descargar Gratis 🚀
                       <span className="text-lg">⬇️</span>
                     </span>
                   )}
