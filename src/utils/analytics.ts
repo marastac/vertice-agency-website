@@ -1,101 +1,103 @@
-// src/utils/analytics.ts - Versión Final Optimizada
-// Combina lazy loading + enhanced tracking + performance
+// src/utils/analytics.ts — Versión Final Optimizada (con guardias anti-duplicado)
 
+// Tipos globales
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    fbq: (...args: any[]) => void;
-    lintrk: (...args: any[]) => void;
-    dataLayer: any[];
-    _linkedin_partner_id: string;
-    _linkedin_data_partner_ids: string[];
+    gtag?: (...args: any[]) => void;
+    fbq?: (...args: any[]) => void;
+    lintrk?: (...args: any[]) => void;
+    dataLayer?: any[];
+    _linkedin_partner_id?: string;
+    _linkedin_data_partner_ids?: string[];
+    __analytics_initialized?: boolean;
+    __ga4_loaded?: boolean;
+    __fb_loaded?: boolean;
   }
 }
 
-// 🎯 Configuration
+// 🎯 Configuración (Vite-safe)
+const getMode = () => {
+  try { return (import.meta as any)?.env?.MODE || 'production'; } catch { return 'production'; }
+};
 const ANALYTICS_CONFIG = {
   GA_MEASUREMENT_ID: 'G-YN77ENMF5B',
   FB_PIXEL_ID: '1419230625849117',
-  LINKEDIN_PARTNER_ID: '', // Para futuro uso
-  DEBUG_MODE: process.env.NODE_ENV === 'development'
+  LINKEDIN_PARTNER_ID: '', // Para futuro
+  DEBUG_MODE: getMode() !== 'production',
 };
 
-// 🚀 Lazy loading de scripts optimizado
+// 🚀 Cargador async de scripts (id evita duplicados)
 const loadScriptAsync = (src: string, id?: string): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if (id && document.getElementById(id)) {
-      resolve();
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = true;
-    if (id) script.id = id;
-    
-    script.onload = () => resolve();
-    script.onerror = reject;
-    
-    document.head.appendChild(script);
+    if (id && document.getElementById(id)) return resolve();
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    if (id) s.id = id;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(s);
   });
 };
 
-// 📊 Google Analytics 4 con enhanced tracking
+// 📊 Google Analytics 4 (con guardias)
 export const initGA4 = async (measurementId: string = ANALYTICS_CONFIG.GA_MEASUREMENT_ID) => {
   try {
-    // Cargar script de forma lazy
-    await loadScriptAsync(
-      `https://www.googletagmanager.com/gtag/js?id=${measurementId}`,
-      'ga-script'
-    );
-    
-    // Configurar gtag
-    window.dataLayer = window.dataLayer || [];
-    const gtag = (...args: any[]) => {
-      window.dataLayer.push(args);
-    };
-    
-    gtag('js', new Date());
-    gtag('config', measurementId, {
-      page_title: document.title,
-      page_location: window.location.href,
-      anonymize_ip: true,
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false,
-      // Enhanced measurement
-      enhanced_measurement: {
-        scrolls: true,
-        outbound_clicks: true,
-        site_search: true,
-        video_engagement: true,
-        file_downloads: true
-      },
-      // Custom parameters
-      custom_map: {
-        'custom_parameter_1': 'business_type',
-        'custom_parameter_2': 'lead_source'
-      }
-    });
-    
-    // Hacer gtag disponible globalmente
-    window.gtag = gtag;
-    
-    if (ANALYTICS_CONFIG.DEBUG_MODE) {
-      console.log('✅ Google Analytics 4 inicializado');
+    if (!measurementId) return;
+
+    // Si ya hay gtag() o un script de GA en la página, NO duplicar
+    const alreadyHasGtag = typeof window.gtag === 'function';
+    const hasGaScript = !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]');
+
+    if (!alreadyHasGtag && !hasGaScript) {
+      await loadScriptAsync(`https://www.googletagmanager.com/gtag/js?id=${measurementId}`, 'ga-script');
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        window.dataLayer!.push(arguments);
+      };
+      window.gtag('js', new Date());
+      window.gtag('config', measurementId, {
+        page_title: document.title,
+        page_location: window.location.href,
+        anonymize_ip: true,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        // Enhanced measurement básico
+        enhanced_measurement: {
+          scrolls: true,
+          outbound_clicks: true,
+          site_search: true,
+          video_engagement: true,
+          file_downloads: true,
+        },
+      });
+      window.__ga4_loaded = true;
+    } else {
+      // Asegura dataLayer y respeta config existente (evita doble PageView)
+      window.dataLayer = window.dataLayer || [];
     }
-  } catch (error) {
-    console.error('❌ Error al cargar Google Analytics:', error);
+
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ GA4 listo (sin duplicados)');
+  } catch (e) {
+    console.error('❌ Error GA4:', e);
   }
 };
 
-// 📱 Facebook Pixel con lazy loading optimizado
+// 📱 Facebook Pixel (con guardias)
 export const initFacebookPixel = async (pixelId: string = ANALYTICS_CONFIG.FB_PIXEL_ID) => {
   try {
-    // Evitar doble inicialización
-    if (window.fbq) return;
+    if (!pixelId) return;
+    const hasFbq = typeof window.fbq === 'function';
+    const hasFbScript = !!document.querySelector('script[src*="connect.facebook.net"]');
+    if (hasFbq || hasFbScript || window.__fb_loaded) {
+      if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('ℹ️ Pixel ya presente, no se duplica');
+      return;
+    }
 
-    const script = document.createElement('script');
-    script.innerHTML = `
+    const boot = document.createElement('script');
+    boot.innerHTML = `
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -107,401 +109,272 @@ export const initFacebookPixel = async (pixelId: string = ANALYTICS_CONFIG.FB_PI
       fbq('init', '${pixelId}');
       fbq('track', 'PageView');
     `;
-    
-    document.head.appendChild(script);
-    
-    if (ANALYTICS_CONFIG.DEBUG_MODE) {
-      console.log('✅ Facebook Pixel inicializado');
-    }
-  } catch (error) {
-    console.error('❌ Error al cargar Facebook Pixel:', error);
+    document.head.appendChild(boot);
+    window.__fb_loaded = true;
+
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ Facebook Pixel listo (sin duplicados)');
+  } catch (e) {
+    console.error('❌ Error Pixel:', e);
   }
 };
 
-// 💼 LinkedIn Insight Tag (para futuro)
+// 💼 LinkedIn Insight (futuro)
 export const initLinkedInInsight = async (partnerId: string = ANALYTICS_CONFIG.LINKEDIN_PARTNER_ID) => {
   if (!partnerId) return;
-  
   try {
-    const script = document.createElement('script');
-    script.innerHTML = `
+    const pre = document.createElement('script');
+    pre.innerHTML = `
       _linkedin_partner_id = "${partnerId}";
       window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
       window._linkedin_data_partner_ids.push(_linkedin_partner_id);
     `;
-    document.head.appendChild(script);
-
+    document.head.appendChild(pre);
     await loadScriptAsync('https://snap.licdn.com/li.lms-analytics/insight.min.js', 'linkedin-insight');
-    
-    if (ANALYTICS_CONFIG.DEBUG_MODE) {
-      console.log('✅ LinkedIn Insight Tag inicializado');
-    }
-  } catch (error) {
-    console.error('❌ Error al cargar LinkedIn Insight:', error);
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ LinkedIn Insight listo');
+  } catch (e) {
+    console.error('❌ Error LinkedIn:', e);
   }
 };
 
-// 🎯 Track events optimizado con múltiples plataformas
+// 🎯 Event tracking unificado
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
   if (typeof window === 'undefined') return;
-
   const eventData = {
     ...parameters,
     timestamp: Date.now(),
     page_url: window.location.href,
-    page_title: document.title
+    page_title: document.title,
   };
-
-  // Google Analytics
-  if (window.gtag) {
-    window.gtag('event', eventName, eventData);
-  }
-
-  // Facebook Pixel
-  if (window.fbq) {
-    window.fbq('trackCustom', eventName, eventData);
-  }
-
-  if (ANALYTICS_CONFIG.DEBUG_MODE) {
-    console.log('📊 Event tracked:', eventName, eventData);
-  }
+  window.gtag?.('event', eventName, eventData);
+  try { window.fbq?.('trackCustom', eventName, eventData); } catch {}
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Event:', eventName, eventData);
 };
 
-// 📝 Track form submissions con debounce mejorado
-let formSubmissionTimeout: any;
+// 📝 Forms con debounce
+let __formTimeout: any;
 export const trackFormSubmission = (formType: string, additionalData?: Record<string, any>, debounceMs: number = 1000) => {
-  clearTimeout(formSubmissionTimeout);
-  formSubmissionTimeout = setTimeout(() => {
-    // Google Analytics
-    if (window.gtag) {
-      window.gtag('event', 'form_submit', {
-        form_type: formType,
-        page_location: window.location.href,
-        page_title: document.title,
-        value: formType === 'contact' ? 100 : formType === 'newsletter' ? 50 : 25,
-        ...additionalData
-      });
-    }
-
-    // Facebook Pixel
-    if (window.fbq) {
-      const eventType = formType === 'contact' ? 'Lead' : 'Subscribe';
-      window.fbq('track', eventType, {
+  clearTimeout(__formTimeout);
+  __formTimeout = setTimeout(() => {
+    window.gtag?.('event', 'form_submit', {
+      form_type: formType,
+      page_location: window.location.href,
+      page_title: document.title,
+      value: formType === 'contact' ? 100 : formType === 'newsletter' ? 50 : 25,
+      ...additionalData,
+    });
+    const fbEvent = formType === 'contact' ? 'Lead' : 'Subscribe';
+    try {
+      window.fbq?.('track', fbEvent as any, {
         content_name: `${formType} form`,
         content_category: 'Lead Generation',
         value: formType === 'contact' ? 100 : 50,
         currency: 'USD',
-        ...additionalData
+        ...additionalData,
       });
-    }
-
-    if (ANALYTICS_CONFIG.DEBUG_MODE) {
-      console.log('📝 Form submission tracked:', formType, additionalData);
-    }
+    } catch {}
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📝 Form submit:', formType, additionalData);
   }, debounceMs);
 };
 
-// 🖱️ Track button clicks optimizado
+// 🖱️ Clicks (idle)
 export const trackButtonClick = (buttonName: string, location: string, additionalData?: Record<string, any>) => {
-  // Usar requestIdleCallback para mejor performance
-  const trackClick = () => {
-    trackEvent('button_click', {
-      button_name: buttonName,
-      click_location: location,
-      ...additionalData
-    });
-  };
-
-  if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(trackClick);
-  } else {
-    setTimeout(trackClick, 0);
-  }
+  const run = () => trackEvent('button_click', { button_name: buttonName, click_location: location, ...additionalData });
+  (window as any).requestIdleCallback ? (window as any).requestIdleCallback(run) : setTimeout(run, 0);
 };
 
-// 📏 Track scroll depth optimizado con throttling
+// 📏 Scroll depth con thresholds
 export const trackScrollDepth = () => {
-  let maxScroll = 0;
-  let ticking = false;
-  const trackingThresholds = [25, 50, 75, 90, 100];
-  const trackedThresholds = new Set<number>();
+  let maxScroll = 0, ticking = false;
+  const thresholds = [25, 50, 75, 90, 100];
+  const seen = new Set<number>();
 
-  const handleScroll = () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = Math.round((scrollTop / documentHeight) * 100);
-
-        if (scrollPercent > maxScroll) {
-          maxScroll = scrollPercent;
-          
-          for (const threshold of trackingThresholds) {
-            if (scrollPercent >= threshold && !trackedThresholds.has(threshold)) {
-              trackedThresholds.add(threshold);
-              
-              trackEvent('scroll_depth', {
-                scroll_depth: threshold,
-                max_scroll_reached: maxScroll
-              });
-              
-              // Facebook Pixel custom event
-              if (window.fbq) {
-                window.fbq('trackCustom', 'ScrollDepth', {
-                  scroll_depth: threshold
-                });
-              }
-              break;
-            }
+  const onScroll = () => {
+    if (ticking) return;
+    requestAnimationFrame(() => {
+      const top = window.pageYOffset || document.documentElement.scrollTop;
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      if (docH <= 0) { ticking = false; return; }
+      const pct = Math.round((top / docH) * 100);
+      if (pct > maxScroll) {
+        maxScroll = pct;
+        for (const t of thresholds) {
+          if (pct >= t && !seen.has(t)) {
+            seen.add(t);
+            trackEvent('scroll_depth', { scroll_depth: t, max_scroll_reached: maxScroll });
+            try { window.fbq?.('trackCustom', 'ScrollDepth', { scroll_depth: t }); } catch {}
+            break;
           }
         }
-        
-        ticking = false;
-      });
-      ticking = true;
-    }
+      }
+      ticking = false;
+    });
+    ticking = true;
   };
 
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  
-  return () => {
-    window.removeEventListener('scroll', handleScroll);
-    trackedThresholds.clear();
-  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  return () => window.removeEventListener('scroll', onScroll);
 };
 
-// ⚡ Performance monitoring mejorado
+// ⚡ Performance básica + paints
 export const measurePerformance = () => {
-  if ('performance' in window) {
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const navEntries = performance.getEntriesByType('navigation');
-        if (navEntries.length > 0) {
-          const perfData = navEntries[0] as PerformanceNavigationTiming;
-          
-          const performanceMetrics = {
-            page_load_time: Math.round(perfData.loadEventEnd - perfData.navigationStart),
-            dom_content_loaded: Math.round(perfData.domContentLoadedEventEnd - perfData.navigationStart),
-            first_paint: Math.round(perfData.responseEnd - perfData.navigationStart),
-            ttfb: Math.round(perfData.responseStart - perfData.navigationStart),
-            page_url: window.location.href,
-            connection_type: (navigator as any).connection?.effectiveType || 'unknown'
-          };
+  if (!('performance' in window)) return;
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const nav = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      if (nav && nav.length) {
+        const p = nav[0];
+        const data = {
+          page_load_time: Math.round(p.loadEventEnd - p.navigationStart),
+          dom_content_loaded: Math.round(p.domContentLoadedEventEnd - p.navigationStart),
+          first_paint: Math.round(p.responseEnd - p.navigationStart),
+          ttfb: Math.round(p.responseStart - p.navigationStart),
+          page_url: window.location.href,
+          connection_type: (navigator as any).connection?.effectiveType || 'unknown',
+        };
+        trackEvent('page_performance', data);
 
-          trackEvent('page_performance', performanceMetrics);
-
-          // Track Core Web Vitals si están disponibles
-          if ('getEntriesByType' in performance) {
-            const paintEntries = performance.getEntriesByType('paint');
-            paintEntries.forEach((entry) => {
-              trackEvent('core_web_vitals', {
-                metric_name: entry.name,
-                metric_value: Math.round(entry.startTime),
-                page_url: window.location.href
-              });
-            });
-          }
-        }
-      }, 1000);
-    });
-  }
-};
-
-// 🎯 Track conversiones específicas
-export const trackConversion = (conversionType: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, additionalData?: Record<string, any>) => {
-  const conversionValue = value || (conversionType === 'contact' ? 100 : conversionType === 'download' ? 75 : 50);
-  
-  // Google Analytics
-  if (window.gtag) {
-    window.gtag('event', 'conversion', {
-      conversion_type: conversionType,
-      value: conversionValue,
-      currency: 'USD',
-      ...additionalData
-    });
-  }
-
-  // Facebook Pixel
-  if (window.fbq) {
-    const eventMap = {
-      'lead': 'Lead',
-      'newsletter': 'Subscribe', 
-      'download': 'CompleteRegistration',
-      'contact': 'Lead'
-    };
-    
-    window.fbq('track', eventMap[conversionType], {
-      value: conversionValue,
-      currency: 'USD',
-      content_category: 'Lead Generation',
-      ...additionalData
-    });
-  }
-
-  if (ANALYTICS_CONFIG.DEBUG_MODE) {
-    console.log('💰 Conversion tracked:', conversionType, { value: conversionValue, ...additionalData });
-  }
-};
-
-// 🚨 Error tracking mejorado
-export const trackError = (error: Error, context?: string, additionalData?: Record<string, any>) => {
-  trackEvent('javascript_error', {
-    error_message: error.message,
-    error_stack: error.stack?.substring(0, 500),
-    context: context || 'unknown',
-    user_agent: navigator.userAgent,
-    ...additionalData
+        const paints = performance.getEntriesByType('paint');
+        paints.forEach((entry: any) => {
+          trackEvent('core_web_vitals', { metric_name: entry.name, metric_value: Math.round(entry.startTime), page_url: window.location.href });
+        });
+      }
+    }, 1000);
   });
-
-  if (ANALYTICS_CONFIG.DEBUG_MODE) {
-    console.error('🚨 Error tracked:', error, context, additionalData);
-  }
 };
 
-// 🎮 Enhanced user interaction tracking
+// 💰 Conversiones
+export const trackConversion = (type: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, extra?: Record<string, any>) => {
+  const v = value ?? (type === 'contact' ? 100 : type === 'download' ? 75 : 50);
+  window.gtag?.('event', 'conversion', { conversion_type: type, value: v, currency: 'USD', ...extra });
+  const map = { lead: 'Lead', newsletter: 'Subscribe', download: 'CompleteRegistration', contact: 'Lead' } as const;
+  try { window.fbq?.('track', map[type] as any, { value: v, currency: 'USD', content_category: 'Lead Generation', ...extra }); } catch {}
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('💰 Conversion:', type, { value: v, ...extra });
+};
+
+// 🚨 Errores
+export const trackError = (error: any, context?: string, extra?: Record<string, any>) => {
+  const msg = error?.message || String(error);
+  const stack = (error?.stack || '').toString().slice(0, 500);
+  trackEvent('javascript_error', { error_message: msg, error_stack: stack, context: context || 'unknown', user_agent: navigator.userAgent, ...extra });
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.error('🚨 Error tracked:', error, context, extra);
+};
+
+// 🧠 Interacciones avanzadas
 export const setupAdvancedTracking = () => {
-  // Track CTA clicks con data attributes
-  document.addEventListener('click', (e) => {
+  // Clicks en elementos con data-cta
+  const onClick = (e: Event) => {
     const target = e.target as HTMLElement;
-    const ctaElement = target.closest('[data-cta]');
-    
-    if (ctaElement) {
-      const ctaName = ctaElement.getAttribute('data-cta');
-      const ctaText = ctaElement.textContent?.trim();
-      
-      trackButtonClick(ctaName || 'unknown_cta', getPageSection(ctaElement), {
-        cta_text: ctaText,
-        element_type: ctaElement.tagName.toLowerCase()
-      });
+    const el = target.closest('[data-cta]') as HTMLElement | null;
+    if (el) {
+      const ctaName = el.getAttribute('data-cta') || 'unknown_cta';
+      const ctaText = el.textContent?.trim();
+      trackButtonClick(ctaName, getPageSection(el), { cta_text: ctaText, element_type: el.tagName.toLowerCase() });
     }
-
-    // Track external links
-    const link = target.closest('a') as HTMLAnchorElement;
+    // Enlaces externos
+    const link = target.closest?.('a') as HTMLAnchorElement | null;
     if (link && link.hostname !== window.location.hostname) {
-      trackEvent('external_link_click', {
-        link_url: link.href,
-        link_text: link.textContent?.trim(),
-        target_domain: link.hostname
-      });
+      trackEvent('external_link_click', { link_url: link.href, link_text: link.textContent?.trim(), target_domain: link.hostname });
     }
-  });
+  };
+  document.addEventListener('click', onClick);
 
-  // Track form field interactions
-  document.addEventListener('focusin', (e) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-      const formName = target.closest('form')?.getAttribute('data-form-name') || 'unknown';
-      const fieldName = target.getAttribute('name') || target.id || 'unknown_field';
-      
-      trackEvent('form_field_focus', {
-        form_name: formName,
-        field_name: fieldName,
-        field_type: target.getAttribute('type') || target.tagName.toLowerCase()
-      });
+  // Focus de campos
+  const onFocus = (e: Event) => {
+    const t = e.target as HTMLElement;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) {
+      const formName = t.closest('form')?.getAttribute('data-form-name') || 'unknown';
+      const fieldName = t.getAttribute('name') || t.id || 'unknown_field';
+      trackEvent('form_field_focus', { form_name: formName, field_name: fieldName, field_type: t.getAttribute('type') || t.tagName.toLowerCase() });
     }
-  });
+  };
+  document.addEventListener('focusin', onFocus);
 
-  // Track video interactions si hay videos
-  document.addEventListener('play', (e) => {
-    const target = e.target as HTMLVideoElement;
-    if (target.tagName === 'VIDEO') {
-      trackEvent('video_play', {
-        video_title: target.title || target.src,
-        video_duration: target.duration,
-        video_current_time: target.currentTime
-      });
+  // Videos
+  const onPlay = (e: Event) => {
+    const v = e.target as HTMLVideoElement;
+    if (v && v.tagName === 'VIDEO') {
+      trackEvent('video_play', { video_title: v.title || v.src, video_duration: v.duration, video_current_time: v.currentTime });
     }
-  }, true);
+  };
+  document.addEventListener('play', onPlay, true);
 
-  // Track time on page
-  const startTime = Date.now();
-  window.addEventListener('beforeunload', () => {
-    const timeOnPage = Math.round((Date.now() - startTime) / 1000);
-    trackEvent('time_on_page', {
-      time_seconds: timeOnPage,
-      time_minutes: Math.round(timeOnPage / 60)
-    });
-  });
+  // Tiempo en página
+  const start = Date.now();
+  const onUnload = () => {
+    const secs = Math.round((Date.now() - start) / 1000);
+    trackEvent('time_on_page', { time_seconds: secs, time_minutes: Math.round(secs / 60) });
+  };
+  window.addEventListener('beforeunload', onUnload);
+
+  // Cleanup opcional (si alguna vez lo necesitas)
+  return () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('focusin', onFocus);
+    document.removeEventListener('play', onPlay, true);
+    window.removeEventListener('beforeunload', onUnload);
+  };
 };
 
-// 🔍 Utility functions
-const getPageSection = (element: Element): string => {
-  const section = element.closest('section');
-  return section?.id || section?.className.split(' ')[0] || 'unknown';
+// 🔍 Utilidad
+const getPageSection = (el: Element): string => {
+  const section = el.closest('section');
+  return section?.id || (section?.className?.toString().split(' ')[0] ?? 'unknown');
 };
 
-// 🚀 Initialize all analytics con estrategia optimizada
+// 🚀 Init maestro (una sola vez)
 export const initAnalytics = () => {
-  let analyticsInitialized = false;
+  if (window.__analytics_initialized) return;
+  window.__analytics_initialized = true;
 
   const initializeTracking = async () => {
-    if (analyticsInitialized) return;
-    analyticsInitialized = true;
-
     try {
-      // Inicializar servicios en paralelo
       await Promise.all([
         initGA4(),
         initFacebookPixel(),
-        // initLinkedInInsight() // Descomentar cuando tengas LinkedIn Business
+        // initLinkedInInsight() // Activar cuando tengas LinkedIn
       ]);
 
-      // Setup tracking adicional
       measurePerformance();
-      const cleanupScrollTracking = trackScrollDepth();
+      const cleanupScroll = trackScrollDepth();
       setupAdvancedTracking();
 
-      // Setup error tracking global
-      window.addEventListener('error', (event) => {
-        trackError(event.error, 'global_error_handler');
-      });
+      // Error handlers globales (una vez)
+      const onErr = (event: ErrorEvent) => trackError(event.error || event.message, 'global_error_handler');
+      const onRej = (event: PromiseRejectionEvent) => trackError(event.reason, 'unhandled_promise_rejection');
+      window.addEventListener('error', onErr);
+      window.addEventListener('unhandledrejection', onRej);
 
-      window.addEventListener('unhandledrejection', (event) => {
-        trackError(new Error(event.reason), 'unhandled_promise_rejection');
-      });
+      if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('🎯 Analytics inicializado (one-shot)');
 
-      if (ANALYTICS_CONFIG.DEBUG_MODE) {
-        console.log('🎯 Sistema de Analytics completamente inicializado');
-      }
-
-      // Retornar función de cleanup
+      // Opcional: retorna cleanup (si hiciera falta desmontar)
       return () => {
-        cleanupScrollTracking();
+        cleanupScroll?.();
+        window.removeEventListener('error', onErr);
+        window.removeEventListener('unhandledrejection', onRej);
       };
-
-    } catch (error) {
-      console.error('❌ Error durante inicialización de analytics:', error);
+    } catch (e) {
+      console.error('❌ Error init analytics:', e);
     }
   };
 
-  // Estrategia de inicialización optimizada
+  // Inicialización por interacción + fallback
   const handleUserInteraction = () => {
     initializeTracking();
-    
-    // Remover listeners después de la primera interacción
     window.removeEventListener('scroll', handleUserInteraction);
     window.removeEventListener('click', handleUserInteraction);
     window.removeEventListener('keydown', handleUserInteraction);
     window.removeEventListener('touchstart', handleUserInteraction);
   };
 
-  // Detectar interacción del usuario para inicializar
   window.addEventListener('scroll', handleUserInteraction, { passive: true });
   window.addEventListener('click', handleUserInteraction, { passive: true });
   window.addEventListener('keydown', handleUserInteraction, { passive: true });
   window.addEventListener('touchstart', handleUserInteraction, { passive: true });
 
-  // Fallback: inicializar después de 3 segundos aunque no haya interacción
-  setTimeout(() => {
-    if (!analyticsInitialized) {
-      initializeTracking();
-    }
-  }, 3000);
-  
-  if (ANALYTICS_CONFIG.DEBUG_MODE) {
-    console.log('📊 Sistema de Analytics preparado para inicialización lazy');
-  }
+  setTimeout(() => initializeTracking(), 3000);
+
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Analytics listo para iniciar');
 };
 
-// Exportar configuración para debugging
+// Debug helper
 export const getAnalyticsConfig = () => ANALYTICS_CONFIG;
