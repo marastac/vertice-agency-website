@@ -8,60 +8,74 @@ import Contact from './components/Contact'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { initAnalytics } from './utils/analytics'
+import { initWebVitals } from './utils/webvitals' // ← añade este archivo (te lo pasé antes)
 
 function App() {
   useEffect(() => {
-    // Inicializar analytics
+    // Inicializar analytics y Web Vitals
     initAnalytics();
-    
-    // 🚀 Setup adicional de marketing
-    setupMarketingTracking();
+    initWebVitals();
+
+    // 🚀 Setup adicional de marketing (con cleanup)
+    const cleanup = setupMarketingTracking();
+    return () => {
+      cleanup?.();
+    };
   }, []);
 
   const setupMarketingTracking = () => {
+    const cleanups: Array<() => void> = [];
+
     // Facebook Pixel - eventos adicionales
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'PageView');
-      
+
       // Track scroll depth
       let maxScroll = 0;
       const trackScrollDepth = () => {
-        const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        const total = document.body.scrollHeight - window.innerHeight;
+        if (total <= 0) return;
+        const scrollPercent = Math.round((window.scrollY / total) * 100);
         if (scrollPercent > maxScroll && scrollPercent % 25 === 0) {
           maxScroll = scrollPercent;
-          (window as any).fbq('trackCustom', 'ScrollDepth', {
-            scroll_depth: scrollPercent
-          });
+          (window as any).fbq('trackCustom', 'ScrollDepth', { scroll_depth: scrollPercent });
         }
       };
-      
       window.addEventListener('scroll', trackScrollDepth, { passive: true });
+      cleanups.push(() => window.removeEventListener('scroll', trackScrollDepth));
     }
 
     // Google Analytics - eventos personalizados
     if (typeof window !== 'undefined' && (window as any).gtag) {
       // Track time on site
       const startTime = Date.now();
-      window.addEventListener('beforeunload', () => {
+      const onBeforeUnload = () => {
         const timeOnSite = Math.round((Date.now() - startTime) / 1000);
         (window as any).gtag('event', 'time_on_site', {
           value: timeOnSite,
           event_category: 'engagement'
         });
-      });
+      };
+      window.addEventListener('beforeunload', onBeforeUnload);
+      cleanups.push(() => window.removeEventListener('beforeunload', onBeforeUnload));
 
       // Track CTA clicks
-      document.addEventListener('click', (e) => {
+      const onDocClick = (e: Event) => {
         const target = e.target as HTMLElement;
-        if (target.closest('[data-cta]')) {
-          const ctaName = target.closest('[data-cta]')?.getAttribute('data-cta');
-          (window as any).gtag('event', 'cta_click', {
-            cta_name: ctaName,
-            page_location: window.location.href
-          });
-        }
-      });
+        const el = target?.closest?.('[data-cta]') as HTMLElement | null;
+        if (!el) return;
+        const ctaName = el.getAttribute('data-cta');
+        (window as any).gtag('event', 'cta_click', {
+          cta_name: ctaName,
+          page_location: window.location.href
+        });
+      };
+      document.addEventListener('click', onDocClick);
+      cleanups.push(() => document.removeEventListener('click', onDocClick));
     }
+
+    // devolver cleanup único
+    return () => cleanups.forEach(fn => fn());
   };
 
   return (
