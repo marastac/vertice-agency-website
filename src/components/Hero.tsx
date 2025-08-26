@@ -1,25 +1,31 @@
-import { memo, useState, useCallback } from 'react'
+import { memo, useState, useCallback, useEffect, useRef } from 'react'
 import Newsletter from './Newsletter'
 
 const Hero = memo(() => {
   const [showNewsletter, setShowNewsletter] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   const handleNewsletterToggle = useCallback(() => {
-    setShowNewsletter(!showNewsletter);
-    
-    // Track newsletter modal open
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'newsletter_modal_open', {
-        source: 'hero_cta'
-      });
-    }
+    setShowNewsletter(prev => !prev);
+    // Tracking apertura modal newsletter
+    (window as any)?.gtag?.('event', 'newsletter_modal_open', { source: 'hero_cta' });
+  }, []);
+
+  // Cerrar modal con Escape y foco inicial
+  useEffect(() => {
+    if (!showNewsletter) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowNewsletter(false);
+    };
+    document.addEventListener('keydown', onKey);
+    // Enfoca el contenedor del diálogo al abrir
+    dialogRef.current?.focus();
+    return () => document.removeEventListener('keydown', onKey);
   }, [showNewsletter]);
 
   return (
@@ -85,6 +91,7 @@ const Hero = memo(() => {
               {/* Botones CTA */}
               <div className="flex flex-col items-center justify-center space-y-6 sm:flex-row sm:space-x-8 sm:space-y-0">
                 <button
+                  type="button"
                   onClick={() => scrollToSection('contact')}
                   data-cta="hero-audit-primary"
                   className="group inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1"
@@ -94,30 +101,42 @@ const Hero = memo(() => {
                 </button>
                 
                 <button
+                  type="button"
                   onClick={handleNewsletterToggle}
                   data-cta="hero-newsletter-secondary"
-                  className="group inline-flex items-center gap-3 rounded-2xl border-3 border-gray-300 bg-white px-10 py-5 text-lg font-bold text-gray-900 shadow-lg transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl hover:-translate-y-1"
+                  className="group inline-flex items-center gap-3 rounded-2xl border-2 border-gray-300 bg-white px-10 py-5 text-lg font-bold text-gray-900 shadow-lg transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl hover:-translate-y-1"
                 >
                   📧 Recibir Tips de IA Gratis
                   <span className="text-xl transition-transform group-hover:translate-x-1">→</span>
                 </button>
               </div>
 
-              {/* 🆕 Newsletter Modal Overlay */}
+              {/* Newsletter Modal Overlay */}
               {showNewsletter && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="relative max-w-lg w-full">
+                <div
+                  className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                  onClick={(e) => { if (e.target === e.currentTarget) setShowNewsletter(false); }}
+                >
+                  <div
+                    ref={dialogRef}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="newsletter-modal-title"
+                    tabIndex={-1}
+                    className="relative max-w-lg w-full outline-none"
+                  >
                     <button 
+                      type="button"
                       onClick={handleNewsletterToggle}
                       className="absolute -top-4 -right-4 bg-white text-gray-600 hover:text-gray-800 rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-lg z-10"
+                      aria-label="Cerrar"
                     >
                       ×
                     </button>
+                    <h2 id="newsletter-modal-title" className="sr-only">Suscripción al Newsletter</h2>
                     <Newsletter 
                       variant="popup" 
-                      onSuccess={() => {
-                        setTimeout(() => setShowNewsletter(false), 3000);
-                      }}
+                      onSuccess={() => { setTimeout(() => setShowNewsletter(false), 3000); }}
                     />
                   </div>
                 </div>
@@ -139,9 +158,10 @@ const Hero = memo(() => {
                 </div>
               </div>
 
-              {/* 🆕 Botón flotante para recursos */}
+              {/* Botón flotante de recursos */}
               <div className="mt-12">
                 <button
+                  type="button"
                   onClick={() => scrollToSection('recursos')}
                   data-cta="hero-resources-floating"
                   className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-200 px-6 py-3 text-base font-semibold text-purple-700 hover:from-purple-200 hover:to-blue-200 hover:border-purple-300 transition-all duration-300 hover:scale-105"
@@ -156,7 +176,7 @@ const Hero = memo(() => {
         </div>
       </div>
 
-      {/* Elementos de fondo decorativos mejorados */}
+      {/* Fondo decorativo */}
       <div className="absolute right-0 top-0 -z-10 opacity-30">
         <div className="h-96 w-96 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 blur-3xl"></div>
       </div>
@@ -171,5 +191,4 @@ const Hero = memo(() => {
 });
 
 Hero.displayName = 'Hero';
-
 export default Hero;
