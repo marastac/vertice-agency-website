@@ -11,97 +11,54 @@ interface NewsletterProps {
   onSuccess?: () => void;
 }
 
+/** Mailchimp (ya rellenado) */
+const MAILCHIMP_ACTION = 'https://app.us16.list-manage.com/subscribe/post';
+const MAILCHIMP_U = 'aac2f72631ef7a81172f12475';
+const MAILCHIMP_ID = '98573a8f1b';
+const HONEYPOT_NAME = `b_${MAILCHIMP_U}_${MAILCHIMP_ID}`;
+
 const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   const [formData, setFormData] = useState<NewsletterFormData>({
     email: '',
     name: '',
     interests: ''
   });
-  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const firstName = (formData.name || '').trim().split(' ')[0] || '';
+  const lastName = (formData.name || '').trim().split(' ').slice(1).join(' ') || '';
+
+  const handleSubmit = useCallback(() => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
+    // Tracking simple (no rompe nada si no existen)
     try {
-      // 🎯 Doble envío: Mailchimp + Formspree para backup
-      
-      // 1. Envío a Mailchimp (sustituir con tu API key y list ID)
-      const mailchimpData = {
-        email_address: formData.email,
-        status: "subscribed",
-        merge_fields: {
-          FNAME: formData.name.split(' ')[0] || '',
-          LNAME: formData.name.split(' ').slice(1).join(' ') || '',
-          INTERESTS: formData.interests
-        },
-        tags: [`newsletter-${variant}`, 'lead-magnet', 'vertice-agency']
-      };
-
-      // 2. Backup con Formspree (usando tu ID existente)
-      const formspreeResponse = await fetch('https://formspree.io/f/mdkzjjez', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'newsletter_signup',
-          email: formData.email,
-          name: formData.name,
-          interests: formData.interests,
-          source: `Newsletter ${variant}`,
-          timestamp: new Date().toISOString(),
-          page_url: window.location.href
-        }),
+      (window as any)?.gtag?.('event', 'generate_lead', {
+        method: `mailchimp_form_${variant}`,
+        value: 1,
+        currency: 'USD',
+        content_group: 'Newsletter'
       });
+    } catch {}
+    try {
+      (window as any)?.fbq?.('track', 'Lead', { source: `newsletter_${variant}` });
+    } catch {}
 
-      if (formspreeResponse.ok) {
-        setSubmitStatus('success');
-        setFormData({ email: '', name: '', interests: '' });
-        
-        // 📊 Analytics tracking
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-          (window as any).gtag('event', 'newsletter_signup', {
-            method: variant,
-            content_group1: 'Newsletter',
-            value: 50
-          });
-        }
-
-        // 📱 Facebook Pixel tracking
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'Subscribe', {
-            content_name: 'Newsletter Signup',
-            content_category: 'Lead Generation',
-            value: 50,
-            currency: 'USD'
-          });
-        }
-
-        onSuccess?.();
-      } else {
-        throw new Error('Error en el envío');
-      }
-    } catch (error) {
-      console.error('Error al suscribirse:', error);
-      setSubmitStatus('error');
-    } finally {
+    setTimeout(() => {
       setIsSubmitting(false);
-    }
-  }, [formData, variant, onSuccess]);
+      setSubmitStatus('success');
+      setFormData({ email: '', name: '', interests: '' });
+      onSuccess?.();
+    }, 800);
+  }, [variant, onSuccess]);
 
-  // 🎨 Estilos por variante
   const getVariantStyles = () => {
     switch (variant) {
       case 'hero':
@@ -147,7 +104,15 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Mailchimp nativo: target=_blank, sin CORS */}
+      <form
+        action={`${MAILCHIMP_ACTION}?u=${encodeURIComponent(MAILCHIMP_U)}&id=${encodeURIComponent(MAILCHIMP_ID)}`}
+        method="post"
+        noValidate
+        target="_blank"
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         <div>
           <input
             type="text"
@@ -159,13 +124,13 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             placeholder="Tu nombre"
           />
         </div>
-        
+
         <div>
           <input
             type="email"
-            name="email"
+            name="EMAIL" // Mailchimp espera EMAIL
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="tu@email.com"
@@ -174,7 +139,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
 
         <div>
           <select
-            name="interests"
+            name="INTERESTS" // merge field opcional; si no existe en MC, lo ignora
             value={formData.interests}
             onChange={handleChange}
             required
@@ -189,30 +154,37 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             <option value="todo">Todo lo anterior</option>
           </select>
         </div>
-        
+
+        {/* Hidden merges + tags */}
+        <input type="hidden" name="FNAME" value={firstName} />
+        <input type="hidden" name="LNAME" value={lastName} />
+        <input type="hidden" name="tags" value={`Newsletter, ${variant}, vertice-agency`} />
+
+        {/* Honeypot anti-bots */}
+        <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
+          <input type="text" name={HONEYPOT_NAME} tabIndex={-1} defaultValue="" />
+        </div>
+
         {submitStatus === 'success' && (
           <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-green-800 text-center">
             <div className="text-2xl mb-2">🎉</div>
             <div className="font-bold mb-1">¡Bienvenido a la comunidad!</div>
-            <div className="text-sm text-green-700">
-              Revisa tu email para confirmar tu suscripción.
-            </div>
+            <div className="text-sm text-green-700">Revisa tu email para confirmar tu suscripción.</div>
           </div>
         )}
-        
+
         {submitStatus === 'error' && (
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800 text-center">
             <div className="text-xl mb-1">❌</div>
-            <div className="font-semibold text-sm">
-              Error al suscribirse. Por favor, intenta nuevamente.
-            </div>
+            <div className="font-semibold text-sm">Error al suscribirse. Por favor, intenta nuevamente.</div>
           </div>
         )}
-        
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className={styles.button + " disabled:opacity-50 disabled:cursor-not-allowed"}
+          className={styles.button + ' disabled:opacity-50 disabled:cursor-not-allowed'}
+          data-cta="newsletter_submit"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
@@ -221,8 +193,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              Suscribirse Gratis
-              <span className="text-lg">→</span>
+              Suscribirse Gratis <span className="text-lg">→</span>
             </span>
           )}
         </button>
@@ -238,5 +209,4 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
 });
 
 Newsletter.displayName = 'Newsletter';
-
 export default Newsletter;
