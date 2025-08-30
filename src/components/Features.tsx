@@ -5,10 +5,18 @@ const Features = memo(() => {
 
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  const handleServiceCTA = useCallback((serviceTitle: string) => {
+    // Tracking suave (no rompe si no existen)
+    (window as any)?.gtag?.('event', 'service_cta_click', {
+      service_name: serviceTitle,
+      page_location: window.location.href,
+    });
+    (window as any)?.fbq?.('trackCustom', 'ServiceCTA', { service_name: serviceTitle });
+    scrollToSection('contact');
+  }, [scrollToSection]);
 
   const services = [
     {
@@ -55,14 +63,15 @@ const Features = memo(() => {
     }
   ];
 
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+
   return (
     <section id="servicios" className="relative bg-gradient-to-br from-gray-50 to-blue-50/30 py-20 md:py-28 overflow-hidden">
       {/* Elementos decorativos de fondo */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 blur-2xl"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-10 blur-3xl"></div>
-      
+      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 blur-2xl" aria-hidden="true"></div>
+      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-10 blur-3xl" aria-hidden="true"></div>
+
       <div className="container relative">
-        
         {/* Header Section */}
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 text-base font-semibold text-blue-700 mb-6 shadow-lg">
@@ -86,31 +95,33 @@ const Features = memo(() => {
             <div
               key={index}
               className={`group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transition-all duration-500 cursor-pointer ${
-                hoveredCard === index 
-                  ? 'shadow-2xl -translate-y-2 scale-105' 
-                  : 'hover:shadow-xl hover:-translate-y-1'
+                hoveredCard === index ? 'shadow-2xl -translate-y-2 scale-105' : 'hover:shadow-xl hover:-translate-y-1'
               }`}
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
+              data-cta={`service_card_${slug(service.title)}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`Servicio: ${service.title}`}
             >
               {/* Gradient overlay en hover */}
               <div className={`absolute inset-0 bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500`}></div>
-              
+
               {/* Icono con animación */}
               <div className={`relative mb-6 transition-transform duration-500 ${hoveredCard === index ? 'scale-125 rotate-6' : ''}`}>
                 <div className={`w-16 h-16 bg-gradient-to-r ${service.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500`}>
                   <span className="text-3xl">{service.icon}</span>
                 </div>
               </div>
-              
+
               <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
                 {service.title}
               </h3>
-              
+
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {service.description}
               </p>
-              
+
               <ul className="space-y-3">
                 {service.benefits.map((benefit, i) => (
                   <li key={i} className="flex items-center text-sm font-medium text-gray-600">
@@ -124,7 +135,12 @@ const Features = memo(() => {
 
               {/* Botón que aparece en hover */}
               <div className={`mt-6 transition-all duration-500 ${hoveredCard === index ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <button className={`w-full bg-gradient-to-r ${service.color} text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300`}>
+                <button
+                  type="button"
+                  onClick={() => handleServiceCTA(service.title)}
+                  className={`w-full bg-gradient-to-r ${service.color} text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300`}
+                  data-cta={`service_cta_${slug(service.title)}`}
+                >
                   Más información
                 </button>
               </div>
@@ -148,7 +164,7 @@ const Features = memo(() => {
               <div className="text-gray-600 font-semibold">Clientes Satisfechos</div>
             </div>
             <div className="group">
-              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duración-300">
                 24/7
               </div>
               <div className="text-gray-600 font-semibold">Automatización IA</div>
@@ -172,8 +188,10 @@ const Features = memo(() => {
               Descubre cómo nuestras soluciones de IA pueden transformar tu negocio
             </p>
             <button
+              type="button"
               onClick={() => scrollToSection('contact')}
               className="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+              data-cta="services_bottom_cta_contact"
             >
               Descubre cómo podemos ayudarte
               <span className="text-xl">🚀</span>
@@ -186,5 +204,4 @@ const Features = memo(() => {
 });
 
 Features.displayName = 'Features';
-
 export default Features;
