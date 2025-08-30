@@ -36,11 +36,10 @@ const ClientLogos = memo(() => {
   return (
     <section className="bg-white py-20 md:py-28 relative overflow-hidden">
       {/* Elementos decorativos */}
-      <div className="absolute top-10 right-20 w-24 h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 blur-xl"></div>
-      <div className="absolute bottom-20 left-20 w-32 h-32 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-10 blur-2xl"></div>
+      <div className="absolute top-10 right-20 w-24 h-24 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 blur-xl" aria-hidden="true"></div>
+      <div className="absolute bottom-20 left-20 w-32 h-32 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-10 blur-2xl" aria-hidden="true"></div>
 
       <div className="container">
-        
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 text-base font-semibold text-blue-700 mb-6">
@@ -58,18 +57,19 @@ const ClientLogos = memo(() => {
           </p>
         </div>
 
-        {/* Grid de logos con animación infinita */}
+        {/* Grid de logos */}
         <div className="mb-20">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 items-center justify-center">
             {clients.map((client, index) => (
               <div
                 key={client.name}
                 className="group flex flex-col items-center justify-center p-6 transition-all duration-500 hover:scale-110"
-                style={{
-                  animationDelay: `${index * 0.1}s`
-                }}
+                style={{ animationDelay: `${index * 0.1}s` }}
+                data-cta={`client_logo_${client.name.replace(/\s+/g, '_').toLowerCase()}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Cliente: ${client.name} (${client.category})`}
               >
-                {/* Logo placeholder mejorado */}
                 <div className="w-full h-20 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl flex flex-col items-center justify-center opacity-70 hover:opacity-100 transition-all duration-300 hover:border-blue-300 hover:shadow-lg group-hover:bg-gradient-to-r group-hover:from-blue-50 group-hover:to-purple-50">
                   <span className="text-sm font-bold text-gray-600 group-hover:text-blue-600 transition-colors duration-300 text-center px-2">
                     {client.name}
@@ -118,7 +118,7 @@ const ClientLogos = memo(() => {
           </div>
         </div>
 
-        {/* Estadísticas mejoradas */}
+        {/* Estadísticas */}
         <div className="bg-gradient-to-r from-gray-900 to-blue-900 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div className="group">
@@ -176,5 +176,4 @@ const ClientLogos = memo(() => {
 });
 
 ClientLogos.displayName = 'ClientLogos';
-
 export default ClientLogos;
