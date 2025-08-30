@@ -1,26 +1,35 @@
 // src/utils/webvitals.ts
-import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
 declare global {
-  interface Window { gtag?: (...args: any[]) => void }
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    fbq?: (...args: any[]) => void;
+  }
 }
 
-const sendToGA4 = (metric: Metric) => {
-  const { name, value } = metric;
-  // GA4 requiere enteros; CLS en milisegundos
-  const val = Math.round(name === 'CLS' ? value * 1000 : value);
+const send = (m: Metric) => {
+  const name = m.name; // 'LCP' | 'CLS' | 'INP' | 'FCP' | 'TTFB'
+  const value = Math.round(name === 'CLS' ? m.value * 1000 : m.value);
 
   window.gtag?.('event', 'web_vital', {
     event_category: 'Web Vitals',
-    event_label: name,     // 'LCP' | 'CLS' | 'INP'
-    value: val,
+    event_label: name,
+    value,
+    id: m.id,
+    page: window.location.href,
     non_interaction: true,
   });
+
+  window.fbq?.('trackCustom', 'WebVital', { name, value, id: m.id });
 };
 
-export const initWebVitals = () => {
-  // Seguro en CSR; si no hay GA4, simplemente no envía
-  onLCP(sendToGA4);
-  onCLS(sendToGA4);
-  onINP(sendToGA4);
-};
+export function reportWebVitals() {
+  onLCP(send);
+  onCLS(send);
+  onINP(send);
+  onFCP(send);
+  onTTFB(send); // reemplaza FID en v5
+}
+
+export const initWebVitals = reportWebVitals;
