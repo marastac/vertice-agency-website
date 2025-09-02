@@ -1,4 +1,5 @@
-import { useState, memo, useCallback } from 'react';
+// src/components/LeadMagnetSection.tsx
+import { useState, memo, useCallback, useEffect, useRef } from 'react';
 
 interface LeadMagnetFormData {
   email: string;
@@ -29,7 +30,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     title: 'Guía Completa: Branding Digital con IA 2025',
     description: 'Descubre cómo crear una marca memorable usando inteligencia artificial y herramientas automatizadas.',
     icon: '🎨',
-    downloadUrl: 'https://drive.google.com/uc?export=download&id=1ziAIIPewct4cIq5sZXA6ds0Gp7nX1hm9', // URL real del PDF
+    downloadUrl: 'https://drive.google.com/uc?export=download&id=1ziAIIPewct4cIq5sZXA6ds0Gp7nX1hm9',
     fileType: 'PDF',
     fileSize: '2.8 MB',
     benefits: [
@@ -77,29 +78,27 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
     name: '',
     business_type: ''
   });
-  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
-      // Envío a Formspree con información del lead magnet
       const response = await fetch('https://formspree.io/f/mdkzjjez', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           type: 'lead_magnet_download',
@@ -116,38 +115,37 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
 
       if (response.ok) {
         setSubmitStatus('success');
-        
-        // 📊 Analytics tracking
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-          (window as any).gtag('event', 'download', {
-            file_name: magnet.title,
-            file_type: magnet.fileType,
-            content_group1: 'Lead Magnet',
-            value: 75
-          });
-        }
 
-        // 📱 Facebook Pixel tracking
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'CompleteRegistration', {
-            content_name: magnet.title,
-            content_category: 'Lead Magnet',
-            value: 75,
-            currency: 'USD'
-          });
-        }
+        // 📊 Analytics
+        (window as any)?.gtag?.('event', 'download', {
+          file_name: magnet.title,
+          file_type: magnet.fileType,
+          content_group1: 'Lead Magnet',
+          value: 75
+        });
+        (window as any)?.fbq?.('track', 'CompleteRegistration', {
+          content_name: magnet.title,
+          content_category: 'Lead Magnet',
+          value: 75,
+          currency: 'USD'
+        });
 
-        // Simular descarga después de 2 segundos
+        // Descarga segura
         setTimeout(() => {
           const link = document.createElement('a');
           link.href = magnet.downloadUrl;
           link.download = magnet.title;
           link.target = '_blank';
+          link.rel = 'noopener noreferrer';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-        }, 2000);
+        }, 1500);
 
+        // ✅ Redirige a página de gracias (mantiene UX de descarga)
+        setTimeout(() => {
+          window.location.href = `/gracias.html?src=leadmagnet&name=${encodeURIComponent(magnet.id)}`;
+        }, 1800);
       } else {
         throw new Error('Error en el envío');
       }
@@ -157,44 +155,57 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, magnet]);
+  }, [formData, magnet, isSubmitting]);
+
+  // Accesibilidad: Escape para cerrar y focus al abrir
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    dialogRef.current?.focus();
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      aria-labelledby="lead-magnet-title"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto outline-none"
+      >
         {/* Header */}
         <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-t-2xl">
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:text-gray-200 text-2xl font-bold"
+            aria-label="Cerrar"
+            type="button"
           >
             ×
           </button>
           <div className="text-center">
             <div className="text-6xl mb-4">{magnet.icon}</div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">{magnet.title}</h2>
+            <h2 id="lead-magnet-title" className="text-2xl md:text-3xl font-bold mb-3">{magnet.title}</h2>
             <p className="text-blue-100 text-lg">{magnet.description}</p>
             <div className="mt-4 inline-flex items-center gap-4 text-sm">
-              <span className="bg-white/20 px-3 py-1 rounded-full">
-                📄 {magnet.fileType}
-              </span>
-              <span className="bg-white/20 px-3 py-1 rounded-full">
-                💾 {magnet.fileSize}
-              </span>
+              <span className="bg-white/20 px-3 py-1 rounded-full">📄 {magnet.fileType}</span>
+              <span className="bg-white/20 px-3 py-1 rounded-full">💾 {magnet.fileSize}</span>
             </div>
           </div>
         </div>
 
         <div className="p-8">
-          
           {/* Beneficios */}
           <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              🎯 Lo que incluye este recurso:
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">🎯 Lo que incluye este recurso:</h3>
             <ul className="space-y-3">
               {magnet.benefits.map((benefit, index) => (
                 <li key={index} className="flex items-start gap-3">
@@ -211,11 +222,9 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
           {submitStatus === 'success' ? (
             <div className="bg-green-50 border-2 border-green-200 rounded-xl p-8 text-center">
               <div className="text-6xl mb-4">🎉</div>
-              <div className="text-2xl font-bold text-green-800 mb-3">
-                ¡Descarga en Progreso!
-              </div>
+              <div className="text-2xl font-bold text-green-800 mb-3">¡Descarga en Progreso!</div>
               <div className="text-green-700 mb-4">
-                Hemos enviado el enlace de descarga a tu email. 
+                Hemos enviado el enlace de descarga a tu email.
                 También te hemos agregado a nuestra newsletter con contenido exclusivo.
               </div>
               <div className="text-sm text-green-600">
@@ -224,25 +233,20 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
               <button
                 onClick={onClose}
                 className="mt-6 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                type="button"
               >
                 Cerrar
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" data-form-name="lead_magnet" noValidate>
               <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  📧 Acceso Inmediato y Gratuito
-                </h3>
-                <p className="text-gray-600">
-                  Completa estos datos y recibe tu descarga al instante
-                </p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">📧 Acceso Inmediato y Gratuito</h3>
+                <p className="text-gray-600">Completa estos datos y recibe tu descarga al instante</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nombre completo *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Nombre completo *</label>
                 <input
                   type="text"
                   name="name"
@@ -253,11 +257,9 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   placeholder="Tu nombre completo"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                 <input
                   type="email"
                   name="email"
@@ -268,11 +270,9 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   placeholder="tu@email.com"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tipo de negocio *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Tipo de negocio *</label>
                 <select
                   name="business_type"
                   value={formData.business_type}
@@ -290,21 +290,19 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   <option value="otro">Otro</option>
                 </select>
               </div>
-              
+
               {submitStatus === 'error' && (
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800">
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800" aria-live="assertive">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">❌</span>
                     <div>
                       <div className="font-semibold">Error al procesar la solicitud</div>
-                      <div className="text-sm text-red-600">
-                        Por favor, intenta nuevamente o contáctanos directamente.
-                      </div>
+                      <div className="text-sm text-red-600">Por favor, intenta nuevamente o contáctanos directamente.</div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <div className="flex gap-4">
                 <button
                   type="button"
@@ -317,6 +315,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   type="submit"
                   disabled={isSubmitting}
                   className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-cta="leadmagnet_download_submit"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -325,8 +324,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Descargar Gratis 🚀
-                      <span className="text-lg">⬇️</span>
+                      Descargar Gratis 🚀 <span className="text-lg">⬇️</span>
                     </span>
                   )}
                 </button>
@@ -348,27 +346,20 @@ const LeadMagnetSection = memo(() => {
 
   const openModal = useCallback((magnet: LeadMagnet) => {
     setSelectedMagnet(magnet);
-    
-    // Track modal open
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'view_item', {
-        item_id: magnet.id,
-        item_name: magnet.title,
-        item_category: 'Lead Magnet'
-      });
-    }
+    (window as any)?.gtag?.('event', 'view_item', {
+      item_id: magnet.id,
+      item_name: magnet.title,
+      item_category: 'Lead Magnet'
+    });
   }, []);
 
-  const closeModal = useCallback(() => {
-    setSelectedMagnet(null);
-  }, []);
+  const closeModal = useCallback(() => setSelectedMagnet(null), []);
 
   return (
     <>
       <section id="recursos" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container">
           <div className="max-w-6xl mx-auto">
-            
             {/* Header */}
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-3 rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-3 text-base font-semibold text-purple-700 mb-6">
@@ -389,7 +380,10 @@ const LeadMagnetSection = memo(() => {
             {/* Lead Magnets Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {LEAD_MAGNETS.map((magnet) => (
-                <div key={magnet.id} className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                <div
+                  key={magnet.id}
+                  className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                >
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{magnet.icon}</div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3">{magnet.title}</h3>
@@ -399,10 +393,11 @@ const LeadMagnetSection = memo(() => {
                       <span>💾 {magnet.fileSize}</span>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => openModal(magnet)}
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    data-cta={`leadmagnet_open_${magnet.id}`}
                   >
                     Descargar Gratis 🚀
                   </button>
@@ -418,14 +413,12 @@ const LeadMagnetSection = memo(() => {
               <button
                 onClick={() => {
                   const element = document.getElementById('contact');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
+                  if (element) element.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                data-cta="leadmagnet_bottom_cta_audit"
               >
-                Solicitar Auditoría Gratuita
-                <span className="text-xl">→</span>
+                Solicitar Auditoría Gratuita <span className="text-xl">→</span>
               </button>
             </div>
           </div>
