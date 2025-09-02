@@ -6,6 +6,7 @@
 <title>¡Gracias! | Vértice Agency</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://www.googletagmanager.com">
+<link rel="preconnect" href="https://connect.facebook.net">
 <style>
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0ea5e9 0%,#7c3aed 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#111}
   .card{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:40px 32px;max-width:640px;width:92%}
@@ -16,11 +17,43 @@
 <!-- GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
 <script>
-window.dataLayer=window.dataLayer||[];
-function gtag(){dataLayer.push(arguments);}
-gtag('js',new Date());
-gtag('config','G-YN77ENMF5B',{page_title:'Gracias',page_location:location.href});
-gtag('event','thank_you_view',{source:new URLSearchParams(location.search).get('src')||'unknown'});
+  window.dataLayer=window.dataLayer||[];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js',new Date());
+  gtag('config','G-YN77ENMF5B',{page_title:'Gracias',page_location:location.href});
+
+  // Params
+  const qs = new URLSearchParams(location.search);
+  const src = qs.get('src') || 'unknown';
+  const name = qs.get('name') || '';
+
+  // Eventos
+  gtag('event','thank_you_view',{source: src});
+  const conversionMap = {
+    leadmagnet: {type:'download', value:75},
+    newsletter: {type:'newsletter', value:50},
+    contact: {type:'contact', value:100}
+  };
+  const conv = conversionMap[src];
+  if (conv) {
+    gtag('event','conversion',{conversion_type: conv.type, value: conv.value, currency:'USD'});
+  }
+
+  // Personalizar titulares cuando cargue el body
+  document.addEventListener('DOMContentLoaded', () => {
+    const h1 = document.getElementById('ty-title');
+    const p2 = document.getElementById('ty-extra');
+    if (src === 'leadmagnet' && name) {
+      h1.textContent = `¡Gracias por descargar ${decodeURIComponent(name)}!`;
+      p2.textContent = 'Tu descarga iniciará en unos segundos. También te enviamos el enlace por email.';
+    } else if (src === 'newsletter') {
+      h1.textContent = '¡Gracias por unirte a la newsletter!';
+      p2.textContent = 'Revisa tu email para confirmar la suscripción.';
+    } else if (src === 'contact') {
+      h1.textContent = '¡Gracias por tu solicitud!';
+      p2.textContent = 'Te contactaremos en las próximas 24 horas.';
+    }
+  });
 </script>
 <!-- Meta Pixel -->
 <script>
@@ -28,16 +61,28 @@ gtag('event','thank_you_view',{source:new URLSearchParams(location.search).get('
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');fbq('init','1419230625849117');fbq('track','PageView');
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1419230625849117');
+fbq('track','PageView');
+// Mapea conversiones por src
+(function(){
+  var map = {
+    leadmagnet: {event:'CompleteRegistration', value:75},
+    newsletter: {event:'Subscribe', value:50},
+    contact: {event:'Lead', value:100}
+  };
+  var m = map[(new URLSearchParams(location.search)).get('src')||''];
+  if (m) fbq('track', m.event, {value:m.value, currency:'USD'});
+})();
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1"/></noscript>
 </head>
 <body>
   <div class="card">
     <div style="font-size:42px">🎉</div>
-    <h1>¡Gracias por unirte!</h1>
+    <h1 id="ty-title">¡Gracias por unirte!</h1>
     <p>Hemos recibido tu información correctamente. Revisa tu bandeja de entrada (y spam) para confirmar.</p>
-    <p>Mientras tanto, puedes volver al inicio y seguir explorando.</p>
+    <p id="ty-extra">Mientras tanto, puedes volver al inicio y seguir explorando.</p>
     <a class="btn" href="/">Volver al inicio</a>
   </div>
 </body>
