@@ -1,15 +1,7 @@
 import { useState, memo, useCallback } from 'react';
 
-interface NewsletterFormData {
-  email: string;
-  name: string;
-  interests: string;
-}
-
-interface NewsletterProps {
-  variant?: 'hero' | 'footer' | 'popup';
-  onSuccess?: () => void;
-}
+interface NewsletterFormData { email: string; name: string; interests: string; }
+interface NewsletterProps { variant?: 'hero' | 'footer' | 'popup'; onSuccess?: () => void; }
 
 /** Mailchimp (ya rellenado) */
 const MAILCHIMP_ACTION = 'https://app.us16.list-manage.com/subscribe/post';
@@ -18,11 +10,7 @@ const MAILCHIMP_ID = '98573a8f1b';
 const HONEYPOT_NAME = `b_${MAILCHIMP_U}_${MAILCHIMP_ID}`;
 
 const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
-  const [formData, setFormData] = useState<NewsletterFormData>({
-    email: '',
-    name: '',
-    interests: ''
-  });
+  const [formData, setFormData] = useState<NewsletterFormData>({ email: '', name: '', interests: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -32,56 +20,44 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   }, []);
 
   const firstName = (formData.name || '').trim().split(' ')[0] || '';
-  const lastName = (formData.name || '').trim().split(' ').slice(1).join(' ') || '';
+  const lastName  = (formData.name || '').trim().split(' ').slice(1).join(' ') || '';
 
   const handleSubmit = useCallback(() => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Tracking simple (no rompe nada si no existen)
-    try {
-      (window as any)?.gtag?.('event', 'generate_lead', {
-        method: `mailchimp_form_${variant}`,
-        value: 1,
-        currency: 'USD',
-        content_group: 'Newsletter'
-      });
-    } catch {}
-    try {
-      (window as any)?.fbq?.('track', 'Lead', { source: `newsletter_${variant}` });
-    } catch {}
+    // Tracking (no falla si no existen)
+    try { (window as any)?.gtag?.('event', 'generate_lead', { method: `mailchimp_form_${variant}`, value: 1, currency: 'USD', content_group: 'Newsletter' }); } catch {}
+    try { (window as any)?.fbq?.('track', 'Lead', { source: `newsletter_${variant}` }); } catch {}
 
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
       setFormData({ email: '', name: '', interests: '' });
       onSuccess?.();
+
+      // 👉 Redirección suave a página de gracias (sin romper el submit nativo)
+      setTimeout(() => { window.location.href = '/gracias.html?src=newsletter'; }, 350);
     }, 800);
   }, [variant, onSuccess]);
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'hero':
-        return {
-          container: 'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
-          title: 'text-2xl font-bold text-gray-900 mb-4',
-          subtitle: 'text-gray-600 mb-6',
-          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
-        };
+        return { container:'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
+                 title:'text-2xl font-bold text-gray-900 mb-4',
+                 subtitle:'text-gray-600 mb-6',
+                 button:'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105' };
       case 'footer':
-        return {
-          container: 'bg-gray-800 rounded-xl p-6',
-          title: 'text-xl font-bold text-white mb-3',
-          subtitle: 'text-gray-300 mb-4',
-          button: 'w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors'
-        };
+        return { container:'bg-gray-800 rounded-xl p-6',
+                 title:'text-xl font-bold text-white mb-3',
+                 subtitle:'text-gray-300 mb-4',
+                 button:'w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors' };
       case 'popup':
-        return {
-          container: 'bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto',
-          title: 'text-2xl font-bold text-gray-900 mb-4 text-center',
-          subtitle: 'text-gray-600 mb-6 text-center',
-          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300'
-        };
+        return { container:'bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto',
+                 title:'text-2xl font-bold text-gray-900 mb-4 text-center',
+                 subtitle:'text-gray-600 mb-6 text-center',
+                 button:'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300' };
       default:
         return getVariantStyles();
     }
@@ -104,7 +80,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         </p>
       </div>
 
-      {/* Mailchimp nativo: target=_blank, sin CORS */}
+      {/* Mailchimp nativo (evita CORS). Abrimos en pestaña nueva y nosotros redirigimos a /gracias.html */}
       <form
         action={`${MAILCHIMP_ACTION}?u=${encodeURIComponent(MAILCHIMP_U)}&id=${encodeURIComponent(MAILCHIMP_ID)}`}
         method="post"
@@ -122,24 +98,26 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="Tu nombre"
+            autoComplete="name"
           />
         </div>
 
         <div>
           <input
             type="email"
-            name="EMAIL" // Mailchimp espera EMAIL
+            name="EMAIL"
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="tu@email.com"
+            autoComplete="email"
           />
         </div>
 
         <div>
           <select
-            name="INTERESTS" // merge field opcional; si no existe en MC, lo ignora
+            name="INTERESTS"
             value={formData.interests}
             onChange={handleChange}
             required
@@ -155,10 +133,10 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
           </select>
         </div>
 
-        {/* Hidden merges + tags */}
+        {/* Merges ocultos + tags */}
         <input type="hidden" name="FNAME" value={firstName} />
         <input type="hidden" name="LNAME" value={lastName} />
-        <input type="hidden" name="tags" value={`Newsletter, ${variant}, vertice-agency`} />
+        <input type="hidden" name="tags"  value={`Newsletter, ${variant}, vertice-agency`} />
 
         {/* Honeypot anti-bots */}
         <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
