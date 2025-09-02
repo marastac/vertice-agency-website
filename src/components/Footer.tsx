@@ -1,4 +1,6 @@
+// src/components/Footer.tsx
 import { memo, useCallback } from 'react';
+import Newsletter from './Newsletter';
 
 const Footer = memo(() => {
   const scrollToSection = useCallback((sectionId: string) => {
@@ -43,14 +45,14 @@ const Footer = memo(() => {
       <div
         className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-l from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"
         aria-hidden="true"
-      ></div>
+      />
       <div
         className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-2xl"
         aria-hidden="true"
-      ></div>
+      />
 
       <div className="relative">
-        {/* Newsletter Section */}
+        {/* Newsletter Section -> usa el componente real */}
         <div className="border-b border-white/10 py-16">
           <div className="container">
             <div className="max-w-4xl mx-auto text-center">
@@ -60,23 +62,10 @@ const Footer = memo(() => {
               <p className="text-blue-100 mb-8 text-lg">
                 Tips semanales, casos de éxito y las últimas tendencias en IA aplicada al marketing
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="flex-1 px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 backdrop-blur-sm"
-                />
-                <button
-                  type="button"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 whitespace-nowrap"
-                  data-cta="footer_newsletter_subscribe"
-                >
-                  Suscribirme
-                </button>
+
+              <div className="max-w-md mx-auto">
+                <Newsletter variant="footer" />
               </div>
-              <p className="text-xs text-blue-200 mt-4">
-                📧 Sin spam. Cancela cuando quieras.
-              </p>
             </div>
           </div>
         </div>
@@ -136,7 +125,7 @@ const Footer = memo(() => {
                       <button
                         type="button"
                         onClick={() => (link.id ? scrollToSection(link.id) : openExternalLink(link.url!))}
-                        className="text-blue-100 hover:text-white transition-colors duración-300 hover:translate-x-2 transform inline-block"
+                        className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
                         data-cta={`footer_quicklink_${(link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
                       >
                         {link.name}
