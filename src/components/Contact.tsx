@@ -1,4 +1,6 @@
+// src/components/Contact.tsx
 import { useState, memo, useCallback } from 'react';
+import { getUTMParams } from '../utils/utm';
 
 const Contact = memo(() => {
   const [formData, setFormData] = useState({
@@ -14,24 +16,25 @@ const Contact = memo(() => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // evita doble envío
+
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
       const FORMSPREE_URL = 'https://formspree.io/f/mdkzjjez';
-      
+      const utm = getUTMParams(); // utm_source, utm_medium, utm_campaign, etc.
+
       const response = await fetch(FORMSPREE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           name: formData.name,
@@ -39,9 +42,12 @@ const Contact = memo(() => {
           phone: formData.phone,
           business: formData.business,
           message: formData.message,
+          form_name: 'Auditoría Gratuita',
           source: 'Vértice Agency Website',
           timestamp: new Date().toISOString(),
-          page_url: window.location.href
+          page_url: window.location.href,
+          user_agent: navigator.userAgent,
+          ...utm
         }),
       });
 
@@ -49,12 +55,13 @@ const Contact = memo(() => {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', phone: '', business: '', message: '' });
         
-        // Tracking
+        // Tracking (no rompe si no existen)
         (window as any)?.gtag?.('event', 'form_submit', {
           form_type: 'contact_audit',
           form_name: 'Auditoría Gratuita',
           page_location: window.location.href,
-          value: 100
+          value: 100,
+          ...utm
         });
 
         (window as any)?.fbq?.('track', 'Lead', {
@@ -66,7 +73,7 @@ const Contact = memo(() => {
 
         (window as any)?.lintrk?.('track', { conversion_id: 'lead_generation' });
 
-        // ✅ Redirección a página de gracias
+        // Redirección a página de gracias
         setTimeout(() => {
           window.location.href = '/gracias.html?src=contact';
         }, 400);
@@ -80,7 +87,7 @@ const Contact = memo(() => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData]);
+  }, [formData, isSubmitting]);
 
   const handleWhatsAppClick = useCallback(() => {
     (window as any)?.gtag?.('event', 'whatsapp_click', {
@@ -131,7 +138,7 @@ const Contact = memo(() => {
                 </p>
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" data-form-name="contact_audit">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     Nombre completo *
@@ -332,5 +339,4 @@ const Contact = memo(() => {
 });
 
 Contact.displayName = 'Contact';
-
 export default Contact;
