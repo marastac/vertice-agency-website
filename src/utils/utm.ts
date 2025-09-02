@@ -1,50 +1,32 @@
 // src/utils/utm.ts
-type UTM = {
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  utm_term?: string;
-  utm_content?: string;
-  referrer?: string;
-  landing?: string;
-};
+export type UTMParams = Partial<{
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_term: string;
+  utm_content: string;
+  ref: string;
+}>;
 
-const KEY = 'va_utm';
-
-const readSearchParams = (): UTM => {
+export const getUTMParams = (): UTMParams => {
   if (typeof window === 'undefined') return {};
   const qs = new URLSearchParams(window.location.search);
-  const data: UTM = {
-    utm_source: qs.get('utm_source') || undefined,
-    utm_medium: qs.get('utm_medium') || undefined,
-    utm_campaign: qs.get('utm_campaign') || undefined,
-    utm_term: qs.get('utm_term') || undefined,
-    utm_content: qs.get('utm_content') || undefined,
-  };
-  return data;
+  const out: UTMParams = {};
+  ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','ref'].forEach((k) => {
+    const v = qs.get(k);
+    if (v) (out as any)[k] = v;
+  });
+  return out;
 };
 
-const capture = (): UTM => {
-  if (typeof window === 'undefined') return {};
-  const stored = sessionStorage.getItem(KEY);
-  if (stored) return JSON.parse(stored);
-
-  const base = readSearchParams();
-  const data: UTM = {
-    ...base,
-    referrer: document.referrer || undefined,
-    landing: window.location.href,
-  };
-
-  sessionStorage.setItem(KEY, JSON.stringify(data));
-  return data;
+export const buildUTMQuery = (extra: Record<string,string> = {}) => {
+  const params = new URLSearchParams();
+  const utm = getUTMParams();
+  Object.entries(utm).forEach(([k, v]) => v && params.append(k, String(v)));
+  Object.entries(extra).forEach(([k, v]) => v && params.set(k, String(v)));
+  const s = params.toString();
+  return s ? `?${s}` : '';
 };
 
-export const getUTM = (): UTM => {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = sessionStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return capture();
-};
+// ✅ Compatibilidad con imports antiguos:
+export const getUTM = getUTMParams;
