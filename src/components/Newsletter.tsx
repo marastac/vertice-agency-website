@@ -1,4 +1,5 @@
 import { useState, memo, useCallback } from 'react';
+import { getUTM } from '../utils/utm';
 
 interface NewsletterFormData { email: string; name: string; interests: string; }
 interface NewsletterProps { variant?: 'hero' | 'footer' | 'popup'; onSuccess?: () => void; }
@@ -13,6 +14,9 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   const [formData, setFormData] = useState<NewsletterFormData>({ email: '', name: '', interests: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // 👇 Captura UTM/referrer/landing
+  const utm = getUTM();
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -35,8 +39,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
       setSubmitStatus('success');
       setFormData({ email: '', name: '', interests: '' });
       onSuccess?.();
-
-      // 👉 Redirección suave a página de gracias (sin romper el submit nativo)
+      // Redirección suave (opcional)
       setTimeout(() => { window.location.href = '/gracias.html?src=newsletter'; }, 350);
     }, 800);
   }, [variant, onSuccess]);
@@ -80,7 +83,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         </p>
       </div>
 
-      {/* Mailchimp nativo (evita CORS). Abrimos en pestaña nueva y nosotros redirigimos a /gracias.html */}
+      {/* Mailchimp nativo (evita CORS). Abre en pestaña nueva; nosotros redirigimos a /gracias.html */}
       <form
         action={`${MAILCHIMP_ACTION}?u=${encodeURIComponent(MAILCHIMP_U)}&id=${encodeURIComponent(MAILCHIMP_ID)}`}
         method="post"
@@ -105,7 +108,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         <div>
           <input
             type="email"
-            name="EMAIL"
+            name="EMAIL"  // Mailchimp espera EMAIL
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
@@ -117,7 +120,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
 
         <div>
           <select
-            name="INTERESTS"
+            name="INTERESTS" // si no existe merge en MC, lo ignora
             value={formData.interests}
             onChange={handleChange}
             required
@@ -137,6 +140,15 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         <input type="hidden" name="FNAME" value={firstName} />
         <input type="hidden" name="LNAME" value={lastName} />
         <input type="hidden" name="tags"  value={`Newsletter, ${variant}, vertice-agency`} />
+
+        {/* 👇 UTM / Referrer / Landing (Mailchimp los ignora si no existen en la lista) */}
+        <input type="hidden" name="UTM_SOURCE"  value={utm.utm_source || ''} />
+        <input type="hidden" name="UTM_MEDIUM"  value={utm.utm_medium || ''} />
+        <input type="hidden" name="UTM_CAMPAIGN" value={utm.utm_campaign || ''} />
+        <input type="hidden" name="UTM_TERM"    value={utm.utm_term || ''} />
+        <input type="hidden" name="UTM_CONTENT" value={utm.utm_content || ''} />
+        <input type="hidden" name="REFERRER"    value={utm.referrer || ''} />
+        <input type="hidden" name="LANDING"     value={utm.landing || ''} />
 
         {/* Honeypot anti-bots */}
         <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">

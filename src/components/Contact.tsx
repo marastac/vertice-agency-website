@@ -1,7 +1,5 @@
 import { useState, memo, useCallback } from 'react';
 
-const FORMSPREE_URL = 'https://formspree.io/f/mdkzjjez';
-
 const Contact = memo(() => {
   const [formData, setFormData] = useState({
     name: '',
@@ -16,21 +14,24 @@ const Contact = memo(() => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
+      const FORMSPREE_URL = 'https://formspree.io/f/mdkzjjez';
+      
       const response = await fetch(FORMSPREE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
         body: JSON.stringify({
           name: formData.name,
@@ -47,17 +48,15 @@ const Contact = memo(() => {
       if (response.ok) {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', phone: '', business: '', message: '' });
-
-        // GA4
+        
+        // Tracking
         (window as any)?.gtag?.('event', 'form_submit', {
           form_type: 'contact_audit',
           form_name: 'Auditoría Gratuita',
           page_location: window.location.href,
           value: 100
         });
-        (window as any)?.gtag?.('event', 'generate_lead', { value: 1 });
 
-        // Facebook Pixel
         (window as any)?.fbq?.('track', 'Lead', {
           content_name: 'Auditoría Gratuita',
           content_category: 'Lead Generation',
@@ -65,8 +64,12 @@ const Contact = memo(() => {
           currency: 'USD'
         });
 
-        // LinkedIn (si está cargado)
         (window as any)?.lintrk?.('track', { conversion_id: 'lead_generation' });
+
+        // ✅ Redirección a página de gracias
+        setTimeout(() => {
+          window.location.href = '/gracias.html?src=contact';
+        }, 400);
 
       } else {
         throw new Error('Error en el envío');
@@ -77,7 +80,7 @@ const Contact = memo(() => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, isSubmitting]);
+  }, [formData]);
 
   const handleWhatsAppClick = useCallback(() => {
     (window as any)?.gtag?.('event', 'whatsapp_click', {
@@ -128,12 +131,7 @@ const Contact = memo(() => {
                 </p>
               </div>
               
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-6"
-                data-form-name="contact_audit"
-                noValidate
-              >
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     Nombre completo *
@@ -174,8 +172,6 @@ const Contact = memo(() => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    inputMode="tel"
-                    pattern="^\+?\d[\d\s\-]{7,}$"
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
                     placeholder="+51 999 999 999"
                   />
@@ -212,13 +208,13 @@ const Contact = memo(() => {
                     onChange={handleChange}
                     required
                     rows={4}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duración-300 text-lg resize-none"
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg resize-none"
                     placeholder="Describe tu mayor desafío en marketing digital..."
                   ></textarea>
                 </div>
                 
                 {submitStatus === 'success' && (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-green-800" aria-live="polite">
+                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-green-800">
                     <div className="text-center">
                       <div className="text-4xl mb-3">🎉</div>
                       <div className="text-xl font-bold mb-2">¡Solicitud enviada con éxito!</div>
@@ -233,7 +229,7 @@ const Contact = memo(() => {
                 )}
                 
                 {submitStatus === 'error' && (
-                  <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800" aria-live="assertive">
+                  <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">❌</span>
                       <div>
@@ -250,7 +246,6 @@ const Contact = memo(() => {
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-5 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  data-cta="contact_submit"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -266,6 +261,7 @@ const Contact = memo(() => {
 
             {/* Información lateral */}
             <div className="space-y-8">
+              
               {/* Beneficios */}
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
@@ -336,4 +332,5 @@ const Contact = memo(() => {
 });
 
 Contact.displayName = 'Contact';
+
 export default Contact;
