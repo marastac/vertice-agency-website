@@ -1,89 +1,128 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>¡Gracias! | Vértice Agency</title>
-<meta name="robots" content="noindex" />
-<link rel="preconnect" href="https://www.googletagmanager.com">
-<link rel="preconnect" href="https://connect.facebook.net">
-<style>
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0ea5e9 0%,#7c3aed 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#111}
-  .card{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:40px 32px;max-width:640px;width:92%}
-  h1{margin:0 0 10px;font-size:28px}
-  p{margin:8px 0;color:#444}
-  .btn{display:inline-block;margin-top:18px;background:#0ea5e9;color:#fff;padding:12px 18px;border-radius:12px;text-decoration:none;font-weight:700}
-</style>
-<!-- GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
-<script>
-  window.dataLayer=window.dataLayer||[];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js',new Date());
-  gtag('config','G-YN77ENMF5B',{page_title:'Gracias',page_location:location.href});
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>¡Gracias! | Vértice Agency</title>
+  <meta name="robots" content="noindex,follow" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+  <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0ea5e9 0%,#7c3aed 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#111}
+    .card{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:40px 32px;max-width:680px;width:92%}
+    h1{margin:0 0 10px;font-size:28px;line-height:1.15}
+    p{margin:8px 0;color:#444}
+    .btn{display:inline-flex;align-items:center;gap:10px;margin-top:18px;background:#0ea5e9;color:#fff;padding:12px 18px;border-radius:12px;text-decoration:none;font-weight:800}
+    .btn.secondary{background:#6b7280}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:2px solid #bfdbfe;background:linear-gradient(90deg,#eff6ff,#f5f3ff);color:#1d4ed8;font-weight:800;margin-bottom:12px}
+    .muted{color:#6b7280;font-size:12px;margin-top:12px}
+  </style>
 
-  // Params
-  const qs = new URLSearchParams(location.search);
-  const src = qs.get('src') || 'unknown';
-  const name = qs.get('name') || '';
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YN77ENMF5B', { page_title: 'Gracias', page_location: location.href });
+  </script>
 
-  // Eventos
-  gtag('event','thank_you_view',{source: src});
-  const conversionMap = {
-    leadmagnet: {type:'download', value:75},
-    newsletter: {type:'newsletter', value:50},
-    contact: {type:'contact', value:100}
-  };
-  const conv = conversionMap[src];
-  if (conv) {
-    gtag('event','conversion',{conversion_type: conv.type, value: conv.value, currency:'USD'});
-  }
-
-  // Personalizar titulares cuando cargue el body
-  document.addEventListener('DOMContentLoaded', () => {
-    const h1 = document.getElementById('ty-title');
-    const p2 = document.getElementById('ty-extra');
-    if (src === 'leadmagnet' && name) {
-      h1.textContent = `¡Gracias por descargar ${decodeURIComponent(name)}!`;
-      p2.textContent = 'Tu descarga iniciará en unos segundos. También te enviamos el enlace por email.';
-    } else if (src === 'newsletter') {
-      h1.textContent = '¡Gracias por unirte a la newsletter!';
-      p2.textContent = 'Revisa tu email para confirmar la suscripción.';
-    } else if (src === 'contact') {
-      h1.textContent = '¡Gracias por tu solicitud!';
-      p2.textContent = 'Te contactaremos en las próximas 24 horas.';
-    }
-  });
-</script>
-<!-- Meta Pixel -->
-<script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','1419230625849117');
-fbq('track','PageView');
-// Mapea conversiones por src
-(function(){
-  var map = {
-    leadmagnet: {event:'CompleteRegistration', value:75},
-    newsletter: {event:'Subscribe', value:50},
-    contact: {event:'Lead', value:100}
-  };
-  var m = map[(new URLSearchParams(location.search)).get('src')||''];
-  if (m) fbq('track', m.event, {value:m.value, currency:'USD'});
-})();
-</script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1"/></noscript>
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','1419230625849117');
+    fbq('track','PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1"/>
+  </noscript>
 </head>
 <body>
-  <div class="card">
-    <div style="font-size:42px">🎉</div>
+  <main class="card" aria-live="polite">
+    <div class="badge" id="ty-badge">🎉 ¡Gracias por tu interés!</div>
     <h1 id="ty-title">¡Gracias por unirte!</h1>
-    <p>Hemos recibido tu información correctamente. Revisa tu bandeja de entrada (y spam) para confirmar.</p>
+    <p id="ty-body">Hemos recibido tu información correctamente. Revisa tu bandeja de entrada (y spam) para confirmar.</p>
     <p id="ty-extra">Mientras tanto, puedes volver al inicio y seguir explorando.</p>
-    <a class="btn" href="/">Volver al inicio</a>
-  </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn" href="/">← Volver al inicio</a>
+      <a class="btn secondary" id="cta-recursos" href="/#recursos" style="display:none">🎁 Ver recursos gratuitos</a>
+      <a class="btn secondary" id="cta-contact" href="/#contact" style="display:none">📞 Solicitar auditoría</a>
+    </div>
+
+    <p class="muted">Vértice Agency • Auditoría sin compromiso · Resultados medibles · Soporte en español</p>
+  </main>
+
+  <script>
+    (function () {
+      const qs = new URLSearchParams(location.search);
+      const rawSrc = (qs.get('src') || '').toLowerCase();
+      // Soportar ambos: ?src=magnet y ?src=leadmagnet
+      const src = rawSrc === 'leadmagnet' ? 'magnet' : rawSrc;
+      const name = qs.get('name') || '';
+
+      // GA4: evento de vista y conversión por tipo
+      try {
+        gtag('event','thank_you_view',{source: src || 'unknown'});
+        const map = {
+          magnet:    { event: 'download', value: 75 },
+          newsletter:{ event: 'subscribe', value: 50 },
+          contact:   { event: 'generate_lead', value: 100 }
+        };
+        if (map[src]) {
+          const m = map[src];
+          gtag('event', m.event, { value: m.value, currency: 'USD' });
+        }
+      } catch (e) {}
+
+      // Pixel: evento según tipo (Subscribe es válido en Meta)
+      try {
+        const pmap = {
+          magnet:    { event: 'CompleteRegistration', value: 75 },
+          newsletter:{ event: 'Subscribe', value: 50 },
+          contact:   { event: 'Lead', value: 100 }
+        };
+        if (pmap[src]) {
+          const m = pmap[src];
+          fbq('track', m.event, { value: m.value, currency: 'USD' });
+        }
+      } catch (e) {}
+
+      // Personalización de mensajes y CTAs
+      const $badge = document.getElementById('ty-badge');
+      const $title = document.getElementById('ty-title');
+      const $body  = document.getElementById('ty-body');
+      const $extra = document.getElementById('ty-extra');
+      const $ctaRec = document.getElementById('cta-recursos');
+      const $ctaContact = document.getElementById('cta-contact');
+
+      if (src === 'magnet') {
+        $badge.textContent = '⬇️ Tu descarga está lista';
+        $title.textContent = '¡Recurso enviado!';
+        $body.textContent  = name
+          ? `Hemos enviado el recurso “${decodeURIComponent(name)}” a tu correo.`
+          : 'Hemos enviado tu recurso a tu correo.';
+        $extra.textContent = 'Si no lo ves en 5 minutos, revisa tu carpeta de spam.';
+        $ctaRec.style.display = 'inline-flex';
+      } else if (src === 'newsletter') {
+        $badge.textContent = '📬 ¡Bienvenid@ al newsletter!';
+        $title.textContent = '¡Suscripción confirmada!';
+        $body.textContent  = 'Desde hoy recibirás estrategias y recursos de marketing con IA.';
+        $extra.textContent = 'Revisa tu correo para la confirmación (puede llegar a spam).';
+        $ctaRec.style.display = 'inline-flex';
+        $ctaContact.style.display = 'inline-flex';
+      } else if (src === 'contact') {
+        $badge.textContent = '✅ ¡Gracias por confiar en nosotros!';
+        $title.textContent = '¡Solicitud de auditoría recibida!';
+        $body.textContent  = 'En las próximas 24 horas te contactaremos por WhatsApp o email para coordinar tu auditoría gratuita.';
+        $extra.textContent = 'Mientras tanto, puedes explorar nuestros recursos gratuitos.';
+        $ctaRec.style.display = 'inline-flex';
+      }
+    })();
+  </script>
 </body>
 </html>

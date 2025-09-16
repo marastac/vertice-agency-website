@@ -1,5 +1,5 @@
 // src/components/Footer.tsx
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import Newsletter from './Newsletter';
 
 const Footer = memo(() => {
@@ -9,17 +9,19 @@ const Footer = memo(() => {
   }, []);
 
   const openExternalLink = useCallback((url: string) => {
+    // Evita abrir pestañas vacías si aún no hay URL real
+    if (!url || url === '#') return;
     window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { name: 'Facebook', icon: '📘', url: '#', color: 'hover:text-blue-400' },
+    { name: 'Facebook',  icon: '📘', url: '#', color: 'hover:text-blue-400' },
     { name: 'Instagram', icon: '📷', url: '#', color: 'hover:text-pink-400' },
-    { name: 'LinkedIn', icon: '💼', url: '#', color: 'hover:text-blue-300' },
-    { name: 'Twitter', icon: '🐦', url: '#', color: 'hover:text-blue-400' },
-    { name: 'YouTube', icon: '📺', url: '#', color: 'hover:text-red-400' }
+    { name: 'LinkedIn',  icon: '💼', url: '#', color: 'hover:text-blue-300' },
+    { name: 'Twitter',   icon: '🐦', url: '#', color: 'hover:text-blue-400' },
+    { name: 'YouTube',   icon: '📺', url: '#', color: 'hover:text-red-400'  }
   ];
 
   const services = [
@@ -36,8 +38,31 @@ const Footer = memo(() => {
     { name: 'Servicios', id: 'servicios' },
     { name: 'Casos de Éxito', id: 'casos' },
     { name: 'Blog', url: '#' },
-    { name: 'Recursos', url: '#' }
+    { name: 'Recursos', id: 'recursos' } // → scroll a #recursos
   ];
+
+  // GA4: registrar vista del bloque de newsletter en el footer
+  const nlRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const node = nlRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            (window as any)?.gtag?.('event', 'view_item', {
+              item_category: 'newsletter',
+              section: 'footer',
+              engagement_time_msec: 1000
+            });
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white overflow-hidden">
@@ -53,7 +78,7 @@ const Footer = memo(() => {
 
       <div className="relative">
         {/* Newsletter Section -> usa el componente real */}
-        <div className="border-b border-white/10 py-16">
+        <div className="border-b border-white/10 py-16" ref={nlRef}>
           <div className="container">
             <div className="max-w-4xl mx-auto text-center">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">
@@ -93,6 +118,11 @@ const Footer = memo(() => {
                       title={social.name}
                       onClick={(e) => {
                         e.preventDefault();
+                        (window as any)?.gtag?.('event', 'select_content', {
+                          content_type: 'social',
+                          item_id: social.name.toLowerCase(),
+                          section: 'footer'
+                        });
                         openExternalLink(social.url);
                       }}
                       data-cta={`footer_social_${social.name.toLowerCase()}`}
@@ -124,9 +154,17 @@ const Footer = memo(() => {
                     <li key={link.name}>
                       <button
                         type="button"
-                        onClick={() => (link.id ? scrollToSection(link.id) : openExternalLink(link.url!))}
+                        onClick={() => {
+                          (window as any)?.gtag?.('event', 'select_content', {
+                            content_type: 'quicklink',
+                            item_id: (link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                            section: 'footer'
+                          });
+                          return link.id ? scrollToSection(link.id) : openExternalLink(link.url!);
+                        }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
                         data-cta={`footer_quicklink_${(link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
+                        aria-label={`Ir a ${link.name}`}
                       >
                         {link.name}
                       </button>
@@ -143,9 +181,17 @@ const Footer = memo(() => {
                     <li key={service}>
                       <button
                         type="button"
-                        onClick={() => scrollToSection('servicios')}
+                        onClick={() => {
+                          (window as any)?.gtag?.('event', 'select_content', {
+                            content_type: 'service_link',
+                            item_id: service.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                            section: 'footer'
+                          });
+                          scrollToSection('servicios');
+                        }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block text-left"
                         data-cta={`footer_service_${service.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
+                        aria-label={`Ver servicio: ${service}`}
                       >
                         {service}
                       </button>
@@ -185,6 +231,11 @@ const Footer = memo(() => {
                         target="_blank"
                         rel="noopener noreferrer"
                         data-cta="footer_whatsapp"
+                        onClick={() => {
+                          (window as any)?.gtag?.('event', 'whatsapp_click', {
+                            location: 'footer'
+                          });
+                        }}
                       >
                         +51 999 999 999
                       </a>
@@ -203,9 +254,16 @@ const Footer = memo(() => {
 
                 <button
                   type="button"
-                  onClick={() => scrollToSection('contact')}
+                  onClick={() => {
+                    (window as any)?.gtag?.('event', 'select_content', {
+                      content_type: 'cta',
+                      item_id: 'footer_auditoria'
+                    });
+                    scrollToSection('contact');
+                  }}
                   className="mt-6 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105"
                   data-cta="footer_auditoria"
+                  aria-label="Ir a la sección de contacto para solicitar Auditoría Gratuita"
                 >
                   Auditoría Gratuita
                 </button>
@@ -231,6 +289,16 @@ const Footer = memo(() => {
                     target="_blank"
                     rel="noopener noreferrer"
                     data-cta={`footer_policy_${txt.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      (window as any)?.gtag?.('event', 'select_content', {
+                        content_type: 'policy',
+                        item_id: txt.toLowerCase().replace(/[^a-z0-9]+/g,'_'),
+                        section: 'footer'
+                      });
+                      // Cuando tengas URLs reales, reemplaza '#' y quita este return
+                      return;
+                    }}
                   >
                     {txt}
                   </a>

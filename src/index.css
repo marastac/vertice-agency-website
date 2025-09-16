@@ -190,3 +190,18 @@ body {
     font-size: 2rem;
   }
 }
+
+/* ===== Header visual boost (solo color/weight) ===== */
+header nav a {
+  color: #0f172a;            /* slate-900 */
+  font-weight: 700;          /* bold */
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+header nav a:hover {
+  color: #0a0f1f;            /* aún más oscuro en hover */
+}
+header .btn-primary,
+header .cta,
+header [data-cta="header_free_audit"] {
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.25);
+}

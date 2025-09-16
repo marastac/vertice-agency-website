@@ -1,5 +1,15 @@
 import { useState, memo, useCallback } from 'react';
 
+// Mapa de íconos: ahora apuntamos a tus PNG finales sin borde
+const serviceIconSrc: Record<string, string> = {
+  "Automatización con IA": "/src/assets/services/ai-automation-pro.png",
+  "Estrategias de Crecimiento": "/src/assets/services/growth-strategy-pro.png",
+  "Publicidad Inteligente": "/src/assets/services/smart-ads-pro.png",
+  "Marketing de Contenido": "/src/assets/services/content-marketing-pro.png",
+  "Analytics Avanzado": "/src/assets/services/advanced-analytics-pro.png",
+  "Implementación Rápida": "/src/assets/services/rapid-implementation-pro.png",
+};
+
 const Features = memo(() => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
@@ -104,14 +114,34 @@ const Features = memo(() => {
               tabIndex={0}
               aria-label={`Servicio: ${service.title}`}
             >
-              {/* Gradient overlay en hover */}
+              {/* Overlay de color muy sutil en card al hover */}
               <div className={`absolute inset-0 bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500`}></div>
 
-              {/* Icono con animación */}
-              <div className={`relative mb-6 transition-transform duration-500 ${hoveredCard === index ? 'scale-125 rotate-6' : ''}`}>
-                <div className={`w-16 h-16 bg-gradient-to-r ${service.color} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500`}>
-                  <span className="text-3xl">{service.icon}</span>
-                </div>
+              {/* Icono: SIN CUADRO, más grande y con glow focal */}
+              <div className={`relative mb-6 transition-transform duration-500 ${hoveredCard === index ? 'scale-110' : ''}`}>
+                {/* Glow (azul→morado) que aparece SOLO en hover */}
+                {/* Mejora visual: halo suave detrás del icono, sin marco */}
+                <span
+                  aria-hidden
+                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 
+                              h-24 w-24 md:h-28 md:w-28 rounded-full 
+                              bg-gradient-to-br ${service.color} blur-2xl opacity-0 
+                              group-hover:opacity-60 transition-opacity duration-500`}
+                />
+                {serviceIconSrc[service.title] ? (
+                  <img
+                    src={serviceIconSrc[service.title]}
+                    alt={service.title}
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
+                    // Mejora visual: icono grande (80→96px) y crecimiento en hover
+                    className="h-20 w-20 md:h-24 md:w-24 object-contain select-none transition-transform duration-500 group-hover:scale-115 drop-shadow-[0_4px_14px_rgba(37,99,235,0.22)]"
+                  />
+                ) : (
+                  <span className="text-5xl md:text-6xl leading-none">{service.icon}</span>
+                )}
               </div>
 
               <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
@@ -164,7 +194,7 @@ const Features = memo(() => {
               <div className="text-gray-600 font-semibold">Clientes Satisfechos</div>
             </div>
             <div className="group">
-              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duración-300">
+              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
                 24/7
               </div>
               <div className="text-gray-600 font-semibold">Automatización IA</div>

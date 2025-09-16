@@ -1,8 +1,17 @@
-import { useState, memo, useCallback } from 'react';
-import { getUTM } from '../utils/utm';
+// src/components/Newsletter.tsx
+import { memo, useCallback, useMemo, useState } from 'react';
+import { trackEvent, trackFormSubmission } from '../utils/analytics';
 
-interface NewsletterFormData { email: string; name: string; interests: string; }
-interface NewsletterProps { variant?: 'hero' | 'footer' | 'popup'; onSuccess?: () => void; }
+type NewsletterProps = {
+  variant?: 'hero' | 'footer' | 'popup';
+  onSuccess?: () => void;
+};
+
+interface NewsletterFormData {
+  email: string;
+  name: string;
+  interests: string;
+}
 
 /** Mailchimp (ya rellenado) */
 const MAILCHIMP_ACTION = 'https://app.us16.list-manage.com/subscribe/post';
@@ -10,14 +19,34 @@ const MAILCHIMP_U = 'aac2f72631ef7a81172f12475';
 const MAILCHIMP_ID = '98573a8f1b';
 const HONEYPOT_NAME = `b_${MAILCHIMP_U}_${MAILCHIMP_ID}`;
 
+// UTM/referrer/landing ligera (sin dependencia externa)
+const getLightUTM = () => {
+  try {
+    const qs = new URLSearchParams(location.search);
+    return {
+      utm_source: qs.get('utm_source') || '',
+      utm_medium: qs.get('utm_medium') || '',
+      utm_campaign: qs.get('utm_campaign') || '',
+      utm_term: qs.get('utm_term') || '',
+      utm_content: qs.get('utm_content') || '',
+      referrer: document.referrer || '',
+      landing: location.pathname + location.search
+    };
+  } catch {
+    return {};
+  }
+};
+
 const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
-  const [formData, setFormData] = useState<NewsletterFormData>({ email: '', name: '', interests: '' });
+  const [formData, setFormData] = useState<NewsletterFormData>({
+    email: '',
+    name: '',
+    interests: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // 👇 Captura UTM/referrer/landing
-  const utm = getUTM();
-
+  const utm = useMemo(() => getLightUTM(), []);
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -27,42 +56,57 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   const lastName  = (formData.name || '').trim().split(' ').slice(1).join(' ') || '';
 
   const handleSubmit = useCallback(() => {
+    // No prevenimos el submit porque MC se envía en _blank.
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Tracking (no falla si no existen)
-    try { (window as any)?.gtag?.('event', 'generate_lead', { method: `mailchimp_form_${variant}`, value: 1, currency: 'USD', content_group: 'Newsletter' }); } catch {}
-    try { (window as any)?.fbq?.('track', 'Lead', { source: `newsletter_${variant}` }); } catch {}
+    // Tracking unificado (GA4 + Pixel) usando helpers
+    try {
+      trackFormSubmission('newsletter', { variant, ...utm });
+      trackEvent('newsletter_submit', { variant, ...utm });
+    } catch {}
 
+    // Como el form abre MC en _blank, aquí redirigimos esta pestaña
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
       setFormData({ email: '', name: '', interests: '' });
       onSuccess?.();
-      // Redirección suave (opcional)
       setTimeout(() => { window.location.href = '/gracias.html?src=newsletter'; }, 350);
     }, 800);
-  }, [variant, onSuccess]);
+  }, [variant, onSuccess, utm, isSubmitting]);
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'hero':
-        return { container:'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
-                 title:'text-2xl font-bold text-gray-900 mb-4',
-                 subtitle:'text-gray-600 mb-6',
-                 button:'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105' };
+        return {
+          container: 'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
+          title: 'text-2xl font-bold text-gray-900 mb-4',
+          subtitle: 'text-gray-600 mb-6',
+          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
+        };
       case 'footer':
-        return { container:'bg-gray-800 rounded-xl p-6',
-                 title:'text-xl font-bold text-white mb-3',
-                 subtitle:'text-gray-300 mb-4',
-                 button:'w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors' };
+        return {
+          container: 'bg-gray-800 rounded-xl p-6',
+          title: 'text-xl font-bold text-white mb-3',
+          subtitle: 'text-gray-300 mb-4',
+          button: 'w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors'
+        };
       case 'popup':
-        return { container:'bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto',
-                 title:'text-2xl font-bold text-gray-900 mb-4 text-center',
-                 subtitle:'text-gray-600 mb-6 text-center',
-                 button:'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300' };
+        return {
+          container: 'bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto',
+          title: 'text-2xl font-bold text-gray-900 mb-4 text-center',
+          subtitle: 'text-gray-600 mb-6 text-center',
+          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300'
+        };
       default:
-        return getVariantStyles();
+        return {
+          container: 'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
+          title: 'text-2xl font-bold text-gray-900 mb-4',
+          subtitle: 'text-gray-600 mb-6',
+          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
+        };
     }
   };
 
@@ -91,7 +135,9 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         target="_blank"
         onSubmit={handleSubmit}
         className="space-y-4"
+        aria-label="Formulario de suscripción al newsletter"
       >
+        {/* Campos visibles */}
         <div>
           <input
             type="text"
@@ -102,6 +148,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="Tu nombre"
             autoComplete="name"
+            aria-label="Nombre"
           />
         </div>
 
@@ -115,6 +162,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="tu@email.com"
             autoComplete="email"
+            aria-label="Email"
           />
         </div>
 
@@ -125,6 +173,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             onChange={handleChange}
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+            aria-label="Intereses"
           >
             <option value="">¿Qué te interesa más?</option>
             <option value="ia-automatizacion">IA y Automatización</option>
@@ -136,23 +185,29 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
           </select>
         </div>
 
-        {/* Merges ocultos + tags */}
+        {/* Merge fields + tags */}
         <input type="hidden" name="FNAME" value={firstName} />
         <input type="hidden" name="LNAME" value={lastName} />
-        <input type="hidden" name="tags"  value={`Newsletter, ${variant}, vertice-agency`} />
+        <input type="hidden" name="tags" value={`Newsletter, ${variant}, vertice-agency`} />
 
-        {/* 👇 UTM / Referrer / Landing (Mailchimp los ignora si no existen en la lista) */}
-        <input type="hidden" name="UTM_SOURCE"  value={utm.utm_source || ''} />
-        <input type="hidden" name="UTM_MEDIUM"  value={utm.utm_medium || ''} />
-        <input type="hidden" name="UTM_CAMPAIGN" value={utm.utm_campaign || ''} />
-        <input type="hidden" name="UTM_TERM"    value={utm.utm_term || ''} />
-        <input type="hidden" name="UTM_CONTENT" value={utm.utm_content || ''} />
-        <input type="hidden" name="REFERRER"    value={utm.referrer || ''} />
-        <input type="hidden" name="LANDING"     value={utm.landing || ''} />
+        {/* UTM / Referrer / Landing (MC los ignora si no existen en la lista) */}
+        <input type="hidden" name="utm_source" value={(utm as any).utm_source || ''} />
+        <input type="hidden" name="utm_medium" value={(utm as any).utm_medium || ''} />
+        <input type="hidden" name="utm_campaign" value={(utm as any).utm_campaign || ''} />
+        <input type="hidden" name="utm_term" value={(utm as any).utm_term || ''} />
+        <input type="hidden" name="utm_content" value={(utm as any).utm_content || ''} />
+        <input type="hidden" name="referrer" value={(utm as any).referrer || ''} />
+        <input type="hidden" name="landing" value={(utm as any).landing || ''} />
 
         {/* Honeypot anti-bots */}
         <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
           <input type="text" name={HONEYPOT_NAME} tabIndex={-1} defaultValue="" />
+        </div>
+
+        {/* Estado accesible */}
+        <div className="sr-only" aria-live="polite">
+          {submitStatus === 'success' ? 'Suscripción realizada correctamente' :
+           submitStatus === 'error'   ? 'Error al suscribirse' : ''}
         </div>
 
         {submitStatus === 'success' && (
@@ -174,7 +229,8 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
           type="submit"
           disabled={isSubmitting}
           className={styles.button + ' disabled:opacity-50 disabled:cursor-not-allowed'}
-          data-cta="newsletter_submit"
+          data-cta={`newsletter_submit_${variant}`}
+          aria-label="Suscribirme al newsletter"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">

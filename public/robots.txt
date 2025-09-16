@@ -1,8 +1,8 @@
 User-agent: *
 Allow: /
 
-# Sitemap location - URL CORRECTA
-Sitemap: https://vertice-agency-website-git-main-marios-projects-166cc110.vercel.app/sitemap.xml
+# Sitemap location - URL FINAL
+Sitemap: https://verticeagency.com/sitemap.xml
 
 User-agent: Googlebot
 Allow: /
