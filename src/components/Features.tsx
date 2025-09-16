@@ -1,13 +1,23 @@
+// src/components/Features.tsx
 import { useState, memo, useCallback } from 'react';
 
-// Mapa de íconos: ahora apuntamos a tus PNG finales sin borde
+// ✅ Importar assets para que Vite los procese en build (Vercel)
+// Mejora: evita rutas /src/... que no existen en producción
+import aiAutomation from '../assets/services/ai-automation-pro.png';
+import growthStrategy from '../assets/services/growth-strategy-pro.png';
+import smartAds from '../assets/services/smart-ads-pro.png';
+import contentMarketing from '../assets/services/content-marketing-pro.png';
+import advancedAnalytics from '../assets/services/advanced-analytics-pro.png';
+import rapidImplementation from '../assets/services/rapid-implementation-pro.png';
+
+// Mapa de íconos: ahora usando imports (funciona en build)
 const serviceIconSrc: Record<string, string> = {
-  "Automatización con IA": "/src/assets/services/ai-automation-pro.png",
-  "Estrategias de Crecimiento": "/src/assets/services/growth-strategy-pro.png",
-  "Publicidad Inteligente": "/src/assets/services/smart-ads-pro.png",
-  "Marketing de Contenido": "/src/assets/services/content-marketing-pro.png",
-  "Analytics Avanzado": "/src/assets/services/advanced-analytics-pro.png",
-  "Implementación Rápida": "/src/assets/services/rapid-implementation-pro.png",
+  "Automatización con IA": aiAutomation,
+  "Estrategias de Crecimiento": growthStrategy,
+  "Publicidad Inteligente": smartAds,
+  "Marketing de Contenido": contentMarketing,
+  "Analytics Avanzado": advancedAnalytics,
+  "Implementación Rápida": rapidImplementation,
 };
 
 const Features = memo(() => {
@@ -77,7 +87,7 @@ const Features = memo(() => {
 
   return (
     <section id="servicios" className="relative bg-gradient-to-br from-gray-50 to-blue-50/30 py-20 md:py-28 overflow-hidden">
-      {/* Elementos decorativos de fondo */}
+      {/* Elementos decorativos de fondo (sin cambios de lógica) */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 blur-2xl" aria-hidden="true"></div>
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-10 blur-3xl" aria-hidden="true"></div>
 
@@ -119,8 +129,7 @@ const Features = memo(() => {
 
               {/* Icono: SIN CUADRO, más grande y con glow focal */}
               <div className={`relative mb-6 transition-transform duration-500 ${hoveredCard === index ? 'scale-110' : ''}`}>
-                {/* Glow (azul→morado) que aparece SOLO en hover */}
-                {/* Mejora visual: halo suave detrás del icono, sin marco */}
+                {/* Glow (azul→morado) SOLO en hover */}
                 <span
                   aria-hidden
                   className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 
@@ -136,8 +145,8 @@ const Features = memo(() => {
                     height={96}
                     loading="lazy"
                     decoding="async"
-                    // Mejora visual: icono grande (80→96px) y crecimiento en hover
-                    className="h-20 w-20 md:h-24 md:w-24 object-contain select-none transition-transform duration-500 group-hover:scale-115 drop-shadow-[0_4px_14px_rgba(37,99,235,0.22)]"
+                    // Mejora visual: icono grande y crecimiento en hover
+                    className="h-20 w-20 md:h-24 md:w-24 object-contain select-none transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_4px_14px_rgba(37,99,235,0.22)]"
                   />
                 ) : (
                   <span className="text-5xl md:text-6xl leading-none">{service.icon}</span>
