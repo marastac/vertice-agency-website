@@ -226,7 +226,7 @@ const Footer = memo(() => {
                     <div>
                       <div className="font-semibold text-white">WhatsApp</div>
                       <a
-                        href="https://wa.me/51999999999"
+                        href="https://wa.me/51907001499"
                         className="hover:text-white transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
