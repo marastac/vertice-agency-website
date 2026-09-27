@@ -1,5 +1,13 @@
 // src/components/ClientLogos.tsx
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Handshake,
+  Target,
+  ChartLineUp,
+  GlobeHemisphereWest,
+  Lightning,
+  Star
+} from 'phosphor-react';
 
 type Client = {
   name: string;
@@ -99,7 +107,10 @@ const useInView = (threshold = 0.5) => {
   return { ref, inView };
 };
 
-const useCountUp = (to: number, opts?: { duration?: number; suffix?: string; prefix?: string; decimals?: number; start?: boolean; }) => {
+const useCountUp = (
+  to: number,
+  opts?: { duration?: number; suffix?: string; prefix?: string; decimals?: number; start?: boolean; }
+) => {
   const { duration = 1200, suffix = '', prefix = '', decimals = 0, start = true } = opts || {};
   const [val, setVal] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -129,7 +140,7 @@ const useCountUp = (to: number, opts?: { duration?: number; suffix?: string; pre
 
 /* ---------------------- STATS ITEM ---------------------- */
 type StatItem = {
-  icon: string;
+  icon: React.ReactNode;
   to: number;
   title: string;
   suffix?: string;
@@ -157,24 +168,22 @@ const TiltStat = ({ icon, to, title, suffix = '', prefix = '', decimals = 0 }: S
 
   return (
     <div ref={ref} className="relative">
-      {/* borde degradado coherente con el logo */}
       <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-blue-500/50 via-indigo-500/50 to-purple-500/50 blur-[2px]" aria-hidden="true"></div>
 
       <div
         ref={cardRef}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        className="relative rounded-3xl bg-[linear-gradient(135deg,rgba(59,130,246,0.18),rgba(99,102,241,0.18),rgba(139,92,246,0.18))] backdrop-blur-xl border border-white/15 p-6 md:p-7 text-center shadow-[0_10px_40px_rgba(2,6,23,.35)] transition-transform duration-200 will-change-transform
+        className="relative arc-card rounded-3xl bg-[linear-gradient(135deg,rgba(59,130,246,0.18),rgba(99,102,241,0.18),rgba(139,92,246,0.18))] backdrop-blur-xl border border-white/15 p-6 md:p-7 text-center shadow-[0_10px_40px_rgba(2,6,23,.35)] transition-transform duration-200 will-change-transform
                    flex flex-col items-center justify-center min-h-[180px]"
         style={{ transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)` }}
       >
-        {/* shimmer sutil */}
         <div className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden">
           <div className="absolute -left-1/2 top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent rotate-12 translate-x-[-120%] group-hover:translate-x-[220%] transition-transform duration-[1500ms] ease-out"></div>
         </div>
 
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-2.5 bg-white/10">
-          <span className="text-2xl" aria-hidden="true">{icon}</span>
+        <div className="w-14 h-14 gloss-circle rounded-full flex items-center justify-center mx-auto mb-2.5 bg-white/10">
+          {icon}
         </div>
 
         <div className="leading-none">
@@ -193,7 +202,6 @@ const TiltStat = ({ icon, to, title, suffix = '', prefix = '', decimals = 0 }: S
 const ClientLogos = memo(() => {
   const sectionRef = useRef<HTMLElement | null>(null);
 
-  // GA4 cuando la sección entra en viewport
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
@@ -221,8 +229,8 @@ const ClientLogos = memo(() => {
       <div className="container">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 text-base font-semibold text-blue-700 mb-6">
-            <span className="text-xl">🤝</span>
+          <div className="inline-flex items-center gap-3 arc-pill border-2 border-blue-200 bg-white/60 px-6 py-3 text-base font-semibold text-blue-700 mb-6">
+            <Handshake size={22} weight="duotone" className="text-blue-600" aria-hidden="true" />
             Confianza que acelera resultados
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4">
@@ -258,9 +266,9 @@ const ClientLogos = memo(() => {
                 aria-label={`Testimonio de ${t.author} (${t.company})`}
               >
                 <div className="mb-6">
-                  <div className="flex text-yellow-400 mb-4" aria-hidden="true">
+                  <div className="flex mb-4" aria-hidden="true">
                     {Array.from({ length: 5 }).map((_, s) => (
-                      <span key={s} className="text-xl">⭐</span>
+                      <Star key={s} size={18} weight="fill" className="text-yellow-400 mr-1.5" />
                     ))}
                   </div>
                   <p className="text-gray-800 leading-relaxed">“{t.text}”</p>
@@ -284,21 +292,40 @@ const ClientLogos = memo(() => {
           </div>
         </div>
 
-        {/* Estadísticas (paleta del logo + alturas iguales) */}
+        {/* Estadísticas */}
         <div className="relative">
           <div className="absolute inset-0 -z-10 rounded-[28px] bg-gradient-to-tr from-blue-700 via-indigo-800 to-purple-900"></div>
           <div className="bg-gradient-to-r from-gray-900/95 to-blue-900/95 rounded-[28px] p-6 md:p-10 text-white shadow-[0_25px_90px_rgba(2,6,23,.45)]">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 group">
-              <TiltStat icon="🎯" to={50}  suffix="+" title="Proyectos exitosos" />
-              <TiltStat icon="📈" to={300} suffix="%" title="ROI promedio" />
-              <TiltStat icon="🌎" to={2} title="Países (Perú & España)" />
-              <TiltStat icon="⚡" to={24} suffix="/7" title="Automatización IA" />
+              <TiltStat
+                icon={<Target size={28} weight="duotone" color="#fff" aria-hidden="true" />}
+                to={50}
+                suffix="+"
+                title="Proyectos exitosos"
+              />
+              <TiltStat
+                icon={<ChartLineUp size={28} weight="duotone" color="#fff" aria-hidden="true" />}
+                to={300}
+                suffix="%"
+                title="ROI promedio"
+              />
+              <TiltStat
+                icon={<GlobeHemisphereWest size={28} weight="duotone" color="#fff" aria-hidden="true" />}
+                to={2}
+                title="Países (Perú & España)"
+              />
+              <TiltStat
+                icon={<Lightning size={28} weight="duotone" color="#fff" aria-hidden="true" />}
+                to={24}
+                suffix="/7"
+                title="Automatización IA"
+              />
             </div>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 });
 
 ClientLogos.displayName = 'ClientLogos';

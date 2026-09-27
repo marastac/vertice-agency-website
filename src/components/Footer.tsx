@@ -2,6 +2,21 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import Newsletter from './Newsletter';
 
+// Mejora visual: íconos Phosphor consistentes (reemplazan emojis)
+import type { IconProps } from 'phosphor-react';
+import {
+  FacebookLogo,
+  InstagramLogo,
+  LinkedinLogo,
+  TwitterLogo,
+  YoutubeLogo,
+  EnvelopeSimple,
+  DeviceMobile,
+  GlobeHemisphereWest,
+  Rocket,
+  Heart,
+} from 'phosphor-react';
+
 const Footer = memo(() => {
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -16,12 +31,20 @@ const Footer = memo(() => {
 
   const currentYear = new Date().getFullYear();
 
-  const socialLinks = [
-    { name: 'Facebook',  icon: '📘', url: '#', color: 'hover:text-blue-400' },
-    { name: 'Instagram', icon: '📷', url: '#', color: 'hover:text-pink-400' },
-    { name: 'LinkedIn',  icon: '💼', url: '#', color: 'hover:text-blue-300' },
-    { name: 'Twitter',   icon: '🐦', url: '#', color: 'hover:text-blue-400' },
-    { name: 'YouTube',   icon: '📺', url: '#', color: 'hover:text-red-400'  }
+  // Mejora visual: tipamos el ícono para usar el mismo componente con props
+  type IconCmp = React.ComponentType<IconProps>;
+
+  const socialLinks: Array<{
+    name: string;
+    Icon: IconCmp;
+    url: string;
+    color: string;
+  }> = [
+    { name: 'Facebook',  Icon: FacebookLogo,  url: '#', color: 'hover:text-blue-400' },
+    { name: 'Instagram', Icon: InstagramLogo, url: '#', color: 'hover:text-pink-400' },
+    { name: 'LinkedIn',  Icon: LinkedinLogo,  url: '#', color: 'hover:text-blue-300' },
+    { name: 'Twitter',   Icon: TwitterLogo,   url: '#', color: 'hover:text-blue-400' },
+    { name: 'YouTube',   Icon: YoutubeLogo,   url: '#', color: 'hover:text-red-400'  },
   ];
 
   const services = [
@@ -30,7 +53,7 @@ const Footer = memo(() => {
     'Publicidad Inteligente',
     'Marketing de Contenido',
     'Analytics Avanzado',
-    'Implementación Rápida'
+    'Implementación Rápida',
   ];
 
   const quickLinks = [
@@ -38,7 +61,7 @@ const Footer = memo(() => {
     { name: 'Servicios', id: 'servicios' },
     { name: 'Casos de Éxito', id: 'casos' },
     { name: 'Blog', url: '#' },
-    { name: 'Recursos', id: 'recursos' } // → scroll a #recursos
+    { name: 'Recursos', id: 'recursos' }, // → scroll a #recursos
   ];
 
   // GA4: registrar vista del bloque de newsletter en el footer
@@ -53,7 +76,7 @@ const Footer = memo(() => {
             (window as any)?.gtag?.('event', 'view_item', {
               item_category: 'newsletter',
               section: 'footer',
-              engagement_time_msec: 1000
+              engagement_time_msec: 1000,
             });
           }
         });
@@ -81,8 +104,12 @@ const Footer = memo(() => {
         <div className="border-b border-white/10 py-16" ref={nlRef}>
           <div className="container">
             <div className="max-w-4xl mx-auto text-center">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                🚀 Recibe estrategias exclusivas de marketing digital
+              <h3 className="text-2xl md:text-3xl font-bold mb-4 inline-flex items-center gap-3">
+                {/* Mejora visual: reemplazo del emoji 🚀 por ícono Phosphor */}
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                  <Rocket size={22} weight="duotone" color="#FFFFFF" aria-hidden="true" />
+                </span>
+                Recibe estrategias exclusivas de marketing digital
               </h3>
               <p className="text-blue-100 mb-8 text-lg">
                 Tips semanales, casos de éxito y las últimas tendencias en IA aplicada al marketing
@@ -110,32 +137,33 @@ const Footer = memo(() => {
 
                 {/* Redes sociales */}
                 <div className="flex space-x-4 mb-6">
-                  {socialLinks.map((social) => (
+                  {socialLinks.map(({ name, Icon, url, color }) => (
                     <a
-                      key={social.name}
-                      href={social.url}
-                      className={`w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl transition-all duration-300 hover:bg-white/20 backdrop-blur-sm ${social.color} hover:scale-110 hover:-translate-y-1`}
-                      title={social.name}
+                      key={name}
+                      href={url}
+                      className={`w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl transition-all duration-300 hover:bg-white/20 backdrop-blur-sm ${color} hover:scale-110 hover:-translate-y-1`}
+                      title={name}
                       onClick={(e) => {
                         e.preventDefault();
                         (window as any)?.gtag?.('event', 'select_content', {
                           content_type: 'social',
-                          item_id: social.name.toLowerCase(),
-                          section: 'footer'
+                          item_id: name.toLowerCase(),
+                          section: 'footer',
                         });
-                        openExternalLink(social.url);
+                        openExternalLink(url);
                       }}
-                      data-cta={`footer_social_${social.name.toLowerCase()}`}
+                      data-cta={`footer_social_${name.toLowerCase()}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Abrir ${social.name} en nueva pestaña`}
+                      aria-label={`Abrir ${name} en nueva pestaña`}
                     >
-                      {social.icon}
+                      {/* Mejora visual: ícono de red social (Phosphor) */}
+                      <Icon size={24} weight="duotone" aria-hidden="true" />
                     </a>
                   ))}
                 </div>
 
-                {/* Certificaciones */}
+                {/* Certificaciones (dejamos emojis aquí como badges visuales cortos) */}
                 <div className="flex flex-wrap gap-3">
                   <div className="bg-white/10 px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">
                     🏆 Google Partner
@@ -158,12 +186,12 @@ const Footer = memo(() => {
                           (window as any)?.gtag?.('event', 'select_content', {
                             content_type: 'quicklink',
                             item_id: (link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                            section: 'footer'
+                            section: 'footer',
                           });
                           return link.id ? scrollToSection(link.id) : openExternalLink(link.url!);
                         }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
-                        data-cta={`footer_quicklink_${(link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
+                        data-cta={`footer_quicklink_${(link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
                         aria-label={`Ir a ${link.name}`}
                       >
                         {link.name}
@@ -185,12 +213,12 @@ const Footer = memo(() => {
                           (window as any)?.gtag?.('event', 'select_content', {
                             content_type: 'service_link',
                             item_id: service.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                            section: 'footer'
+                            section: 'footer',
                           });
                           scrollToSection('servicios');
                         }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block text-left"
-                        data-cta={`footer_service_${service.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
+                        data-cta={`footer_service_${service.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
                         aria-label={`Ver servicio: ${service}`}
                       >
                         {service}
@@ -204,9 +232,11 @@ const Footer = memo(() => {
               <div>
                 <h3 className="text-lg font-bold mb-6 text-white">Contacto</h3>
                 <ul className="space-y-4">
+                  {/* Email */}
                   <li className="flex items-start gap-3 text-blue-100">
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-sm">📧</span>
+                      {/* Mejora visual: ícono de sobre (Phosphor) */}
+                      <EnvelopeSimple size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold text-white">Email</div>
@@ -219,9 +249,12 @@ const Footer = memo(() => {
                       </a>
                     </div>
                   </li>
+
+                  {/* WhatsApp */}
                   <li className="flex items-start gap-3 text-blue-100">
                     <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-sm">📱</span>
+                      {/* Mejora visual: ícono de móvil (Phosphor) */}
+                      <DeviceMobile size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold text-white">WhatsApp</div>
@@ -233,17 +266,20 @@ const Footer = memo(() => {
                         data-cta="footer_whatsapp"
                         onClick={() => {
                           (window as any)?.gtag?.('event', 'whatsapp_click', {
-                            location: 'footer'
+                            location: 'footer',
                           });
                         }}
                       >
-                        +51 999 999 999
+                        +51 907 001 499
                       </a>
                     </div>
                   </li>
+
+                  {/* Cobertura */}
                   <li className="flex items-start gap-3 text-blue-100">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-sm">🌎</span>
+                      {/* Mejora visual: ícono de globo (Phosphor) */}
+                      <GlobeHemisphereWest size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold text-white">Cobertura</div>
@@ -257,7 +293,7 @@ const Footer = memo(() => {
                   onClick={() => {
                     (window as any)?.gtag?.('event', 'select_content', {
                       content_type: 'cta',
-                      item_id: 'footer_auditoria'
+                      item_id: 'footer_auditoria',
                     });
                     scrollToSection('contact');
                   }}
@@ -294,7 +330,7 @@ const Footer = memo(() => {
                       (window as any)?.gtag?.('event', 'select_content', {
                         content_type: 'policy',
                         item_id: txt.toLowerCase().replace(/[^a-z0-9]+/g,'_'),
-                        section: 'footer'
+                        section: 'footer',
                       });
                       // Cuando tengas URLs reales, reemplaza '#' y quita este return
                       return;
@@ -305,8 +341,11 @@ const Footer = memo(() => {
                 ))}
               </div>
 
-              <div className="text-blue-200 text-sm">
-                Made with ❤️ in Peru & Spain
+              <div className="text-blue-200 text-sm inline-flex items-center gap-2">
+                Made with
+                {/* Mejora visual: corazón Phosphor en lugar de emoji */}
+                <Heart size={16} weight="duotone" className="text-pink-300" aria-hidden="true" />
+                in Peru & Spain
               </div>
             </div>
           </div>

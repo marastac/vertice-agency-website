@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useEffect } from 'react'
 import Hero from './components/Hero'
 import ClientLogos from './components/ClientLogos'
@@ -5,10 +6,12 @@ import Features from './components/Features'
 import LeadMagnetSection from './components/LeadMagnetSection'
 import Newsletter from './components/Newsletter'
 import Contact from './components/Contact'
+import AboutUs from './components/AboutUs' // Sección Nosotros (debajo de Contact)
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { initAnalytics } from './utils/analytics'
-import { initWebVitals } from './utils/webvitals' // ← añade este archivo (te lo pasé antes)
+import { initWebVitals } from './utils/webvitals'
+import CursorTrail from './components/CursorTrail' // ✨ Efecto de rastro del cursor (flechas)
 
 function App() {
   useEffect(() => {
@@ -84,12 +87,12 @@ function App() {
       <main>
         <Hero />
         <ClientLogos />
-        
+
         {/* 🎁 Lead Magnets Section */}
         <LeadMagnetSection />
-        
+
         <Features />
-        
+
         {/* 📧 Newsletter Section - Optimizada */}
         <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="container mx-auto px-4">
@@ -102,11 +105,11 @@ function App() {
                   Recibe estrategias exclusivas de IA y marketing digital cada semana
                 </p>
               </div>
-              
+
               <div className="max-w-2xl mx-auto mb-8">
                 <Newsletter variant="hero" />
               </div>
-              
+
               <div className="flex flex-wrap items-center justify-center gap-6 text-blue-100">
                 <div className="flex items-center gap-2">
                   <span className="text-green-400 text-lg">✅</span>
@@ -124,10 +127,21 @@ function App() {
             </div>
           </div>
         </section>
-        
+
         <Contact />
+
+        {/* 👥 Nosotros (debajo de Contact, como pediste) */}
+        <AboutUs />
       </main>
       <Footer />
+
+      {/* ✨ Rastro de cursor (flechas) — renderizado una sola vez a nivel raíz */}
+      <CursorTrail
+        leaderSize={44}      // tamaño de la flecha líder (más grande)
+        trailLength={10}     // cantidad de flechas en el rastro
+        delayStep={28}       // retraso entre flechas (ms)
+        enabledMinWidth={768} // oculta el efecto en móviles/tablet pequeños
+      />
     </div>
   )
 }

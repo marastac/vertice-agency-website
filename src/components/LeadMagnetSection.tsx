@@ -1,5 +1,17 @@
 // src/components/LeadMagnetSection.tsx
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
+import {
+  ShieldCheck,
+  Prohibit,
+  FileText,
+  HardDrive,
+  Target,
+  CheckCircle,
+  EnvelopeSimple,
+  DownloadSimple,
+  Gift,
+  ArrowRight, // ← reemplazo del cohete por flecha
+} from 'phosphor-react';
 
 interface LeadMagnetFormData {
   email: string;
@@ -75,6 +87,9 @@ const LEAD_MAGNETS: LeadMagnet[] = [
   }
 ];
 
+/* =========================
+   Modal de Lead Magnet
+========================= */
 const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps) => {
   const [formData, setFormData] = useState<LeadMagnetFormData>({
     email: '',
@@ -135,7 +150,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
           file_name: magnet.title, file_type: magnet.fileType, content_group1: 'Lead Magnet', value: 75
         });
         (window as any)?.fbq?.('track', 'Lead', { content_name: magnet.title, content_category: 'Lead Magnet', value: 1, currency: 'USD' });
-        (window as any)?.fbq?.('track', 'CompleteRegistration', { content_name: magnet.title, content_category: 'Lead Magnet', value: 75, currency: 'USD' });
+        (window as any)?.fbqq?.('track', 'CompleteRegistration', { content_name: magnet.title, content_category: 'Lead Magnet', value: 75, currency: 'USD' });
 
         setTimeout(() => {
           const link = document.createElement('a');
@@ -204,8 +219,12 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
             <h2 id="lead-magnet-title" className="text-2xl md:text-3xl font-bold mb-3">{magnet.title}</h2>
             <p className="text-blue-100 text-lg">{magnet.description}</p>
             <div className="mt-4 inline-flex items-center gap-4 text-sm">
-              <span className="bg-white/20 px-3 py-1 rounded-full">📄 {magnet.fileType}</span>
-              <span className="bg-white/20 px-3 py-1 rounded-full">💾 {magnet.fileSize}</span>
+              <span className="bg-white/20 px-3 py-1 rounded-full inline-flex items-center gap-2">
+                <FileText size={18} weight="duotone" color="#fff" aria-hidden="true" /> {magnet.fileType}
+              </span>
+              <span className="bg-white/20 px-3 py-1 rounded-full inline-flex items-center gap-2">
+                <HardDrive size={18} weight="duotone" color="#fff" aria-hidden="true" /> {magnet.fileSize}
+              </span>
             </div>
           </div>
         </div>
@@ -213,12 +232,17 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
         <div className="p-8">
           {/* Beneficios */}
           <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">🎯 Lo que incluye este recurso</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4 inline-flex items-center gap-2">
+              <Target size={22} weight="duotone" className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600" aria-hidden="true" />
+              Lo que incluye este recurso
+            </h3>
             <ul className="space-y-3">
               {magnet.benefits.map((benefit, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mt-0.5">
-                    <span className="text-white text-sm font-bold">✓</span>
+                  <div className="flex-shrink-0 mt-0.5">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-green-500 to-green-600">
+                      <CheckCircle size={16} weight="duotone" color="#fff" aria-hidden="true" />
+                    </span>
                   </div>
                   <span className="text-gray-700 font-medium">{benefit}</span>
                 </li>
@@ -246,7 +270,10 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4" data-form-name="lead_magnet" noValidate>
               <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">📧 Acceso inmediato y gratuito</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 inline-flex items-center gap-2">
+                  <EnvelopeSimple size={22} weight="duotone" className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600" aria-hidden="true" />
+                  Acceso inmediato y gratuito
+                </h3>
                 <p className="text-gray-600">Completa tus datos y recibe la descarga al instante.</p>
               </div>
 
@@ -272,7 +299,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duración-300"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                   placeholder="tu@email.com"
                   aria-invalid={submitStatus === 'error' && !isValidEmail(formData.email)}
                 />
@@ -322,7 +349,7 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-xl transition-all duración-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-cta="leadmagnet_download_submit"
                   aria-label={`Descargar ${magnet.title} gratis`}
                 >
@@ -333,14 +360,23 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      Descargar Gratis 🚀 <span className="text-lg">⬇️</span>
+                      <DownloadSimple size={20} weight="duotone" color="#fff" aria-hidden="true" />
+                      Descargar Gratis
                     </span>
                   )}
                 </button>
               </div>
 
-              <div className="text-xs text-gray-500 text-center mt-4">
-                🔒 Tus datos están protegidos • 📧 Sin spam • ❌ Cancelas cuando quieras
+              <div className="text-xs text-gray-500 text-center mt-4 flex items-center justify-center gap-4">
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck size={16} weight="duotone" className="text-green-600" aria-hidden="true" /> Tus datos están protegidos
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Gift size={16} weight="duotone" className="text-purple-600" aria-hidden="true" /> 100% gratis
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Prohibit size={16} weight="duotone" className="text-red-600" aria-hidden="true" /> Cancelas cuando quieras
+                </span>
               </div>
             </form>
           )}
@@ -350,9 +386,16 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
   );
 });
 
+/* =========================
+   Sección de Lead Magnets
+========================= */
 const LeadMagnetSection = memo(() => {
   const [selectedMagnet, setSelectedMagnet] = useState<LeadMagnet | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
+
+  const prefersNoMotion = () =>
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -385,6 +428,11 @@ const LeadMagnetSection = memo(() => {
 
   const closeModal = useCallback(() => setSelectedMagnet(null), []);
 
+  const scrollToContact = useCallback(() => {
+    const el = document.getElementById('contact');
+    if (el) el.scrollIntoView({ behavior: prefersNoMotion() ? 'auto' : 'smooth' });
+  }, []);
+
   return (
     <>
       <section
@@ -397,8 +445,8 @@ const LeadMagnetSection = memo(() => {
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-3 rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-3 text-base font-semibold text-purple-700 mb-6">
-                <span className="text-xl">🎁</span>
+              <div className="arc-pill inline-flex items-center gap-3 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-3 text-base font-semibold text-purple-700 mb-6">
+                <Gift size={20} weight="duotone" className="text-purple-700" aria-hidden="true" />
                 Recursos Gratuitos
               </div>
               <h2 id="recursos-heading" className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-4">
@@ -417,9 +465,18 @@ const LeadMagnetSection = memo(() => {
               className="mb-10 rounded-2xl border border-purple-200 bg-white/70 backdrop-blur-sm px-4 py-3 text-sm font-semibold text-purple-700 flex items-center justify-center gap-6"
               aria-label="Indicadores de confianza para descargas"
             >
-              <span className="flex items-center gap-2"><span className="text-green-600">🔒</span> Descarga segura</span>
-              <span className="flex items-center gap-2"><span className="text-green-600">🎉</span> 100% gratis</span>
-              <span className="flex items-center gap-2"><span className="text-green-600">🚫</span> Sin spam</span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck size={18} weight="duotone" className="text-green-600" aria-hidden="true" />
+                Descarga segura
+              </span>
+              <span className="flex items-center gap-2">
+                <Gift size={18} weight="duotone" className="text-purple-600" aria-hidden="true" />
+                100% gratis
+              </span>
+              <span className="flex items-center gap-2">
+                <Prohibit size={18} weight="duotone" className="text-red-600" aria-hidden="true" />
+                Sin spam
+              </span>
             </div>
 
             {/* Grid */}
@@ -427,7 +484,7 @@ const LeadMagnetSection = memo(() => {
               {LEAD_MAGNETS.map((magnet) => (
                 <article
                   key={magnet.id}
-                  className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                  className="arc-card bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
                   aria-label={`Recurso: ${magnet.title}`}
                 >
                   <div className="text-center mb-6">
@@ -439,15 +496,21 @@ const LeadMagnetSection = memo(() => {
                     <h3 className="text-xl font-bold text-gray-900 mb-3">{magnet.title}</h3>
                     <p className="text-gray-600 mb-4">{magnet.description}</p>
                     <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mb-6">
-                      <span>📄 {magnet.fileType}</span>
-                      <span>💾 {magnet.fileSize}</span>
+                      <span className="inline-flex items-center gap-2">
+                        <FileText size={18} weight="duotone" className="text-blue-700" aria-hidden="true" />
+                        {magnet.fileType}
+                      </span>
+                      <span className="inline-flex items-center gap-2">
+                        <HardDrive size={18} weight="duotone" className="text-purple-700" aria-hidden="true" />
+                        {magnet.fileSize}
+                      </span>
                     </div>
                   </div>
 
                   <ul className="mb-6 space-y-2 text-sm text-gray-700">
                     {magnet.benefits.slice(0, 3).map((b, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="mt-0.5" aria-hidden="true">✔️</span>
+                        <CheckCircle size={16} weight="duotone" className="text-green-600 mt-0.5" aria-hidden="true" />
                         <span>{b}</span>
                       </li>
                     ))}
@@ -459,7 +522,10 @@ const LeadMagnetSection = memo(() => {
                     data-cta={`leadmagnet_open_${magnet.id}`}
                     aria-label={`Abrir formulario para descargar ${magnet.title}`}
                   >
-                    Descargar Gratis 🚀
+                    <span className="inline-flex items-center gap-2 justify-center">
+                      <DownloadSimple size={20} weight="duotone" color="#fff" aria-hidden="true" />
+                      Descargar Gratis
+                    </span>
                   </button>
                 </article>
               ))}
@@ -471,15 +537,13 @@ const LeadMagnetSection = memo(() => {
                 ¿Necesitas una estrategia personalizada? Agenda tu auditoría gratuita.
               </p>
               <button
-                onClick={() => {
-                  const element = document.getElementById('contact');
-                  if (element) element.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                onClick={scrollToContact}
+                className="arc-pill inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-full font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 data-cta="leadmagnet_bottom_cta_audit"
                 aria-label="Ir a contacto para solicitar auditoría gratuita"
               >
-                Solicitar Auditoría Gratuita <span className="text-xl">→</span>
+                Solicitar Auditoría Gratuita
+                <ArrowRight size={20} weight="duotone" aria-hidden="true" />
               </button>
             </div>
           </div>

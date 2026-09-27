@@ -1,0 +1,37 @@
+/* src/components/CursorTrail.css */
+
+/* Cursor nativo oculto solo en desktop y si no hay reduced motion */
+@media (hover: hover) and (pointer: fine) {
+  body {
+    cursor: none !important;
+  }
+}
+
+/* En móviles o touch, no tocamos el cursor ni bloqueamos clics */
+@media (hover: none), (pointer: coarse) {
+  .cursor-trail-container {
+    display: none !important;
+  }
+}
+
+/* Respetar reduce motion: el componente TS no se monta, pero por si acaso… */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    cursor: auto !important;
+  }
+  .cursor-trail-container {
+    display: none !important;
+  }
+}
+
+.cursor-trail-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;    /* No bloquea clics */
+  z-index: 9999;
+}
+
+.cursor-arrow {
+  position: fixed;         /* sigue la ventana, no el documento */
+  will-change: transform, opacity;
+}

@@ -1,6 +1,18 @@
 // src/components/Contact.tsx
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { trackEvent, trackFormSubmission } from '../utils/analytics';
+import {
+  Phone,
+  Rocket,
+  CheckCircle,
+  WhatsappLogo,
+  EnvelopeSimple,
+  ShieldCheck,
+  Prohibit,
+  PaperPlaneRight,
+  Target,
+  ListChecks,
+} from 'phosphor-react';
 
 // Utilidad UTM ligera (sin dependencia externa)
 const getLightUTM = () => {
@@ -175,7 +187,7 @@ const Contact = memo(() => {
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 text-base font-semibold text-blue-700 mb-6">
-              <span className="text-xl">📞</span>
+              <Phone size={20} weight="duotone" aria-hidden="true" />
               Contacto
             </div>
             <h2
@@ -197,7 +209,10 @@ const Contact = memo(() => {
             {/* Formulario */}
             <div className="bg-white rounded-3xl p-8 md:p-10 shadow-2xl border border-gray-100">
               <div className="mb-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">🚀 Auditoría Gratuita con IA</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 inline-flex items-center gap-3">
+                  <Rocket size={24} weight="duotone" className="text-blue-600" aria-hidden="true" />
+                  Auditoría Gratuita con IA
+                </h3>
                 <p className="text-gray-600">
                   Completa el formulario y recibe tu análisis personalizado en 24 horas. Sin ventas agresivas, solo valor.
                 </p>
@@ -298,7 +313,7 @@ const Contact = memo(() => {
                     onChange={handleChange}
                     required
                     rows={4}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg resize-none"
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duración-300 text-lg resize-none"
                     placeholder="Describe tu mayor desafío en marketing digital..."
                   ></textarea>
                 </div>
@@ -315,7 +330,9 @@ const Contact = memo(() => {
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 text-green-800">
                     <div className="text-center">
-                      <div className="text-4xl mb-3">🎉</div>
+                      <div className="inline-flex items-center justify-center mb-3">
+                        <CheckCircle size={28} weight="duotone" className="text-green-600" aria-hidden="true" />
+                      </div>
                       <div className="text-xl font-bold mb-2">¡Solicitud enviada con éxito!</div>
                       <div className="text-green-700 mb-4">
                         Te contactaremos en las próximas 24 horas para agendar tu auditoría gratuita.
@@ -328,7 +345,7 @@ const Contact = memo(() => {
                 {submitStatus === 'error' && (
                   <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">❌</span>
+                      <Prohibit size={20} weight="duotone" className="text-red-600" aria-hidden="true" />
                       <div>
                         <div className="font-semibold">Revisa tus datos e inténtalo de nuevo</div>
                         <div className="text-sm text-red-600">
@@ -352,12 +369,23 @@ const Contact = memo(() => {
                       Enviando...
                     </span>
                   ) : (
-                    'Solicitar Auditoría Gratuita 🚀'
+                    <span className="inline-flex items-center justify-center gap-2">
+                      Solicitar Auditoría Gratuita
+                      <PaperPlaneRight size={20} weight="duotone" aria-hidden="true" />
+                    </span>
                   )}
                 </button>
 
-                <p className="text-xs text-gray-500 text-center">
-                  🔒 Auditoría sin compromiso · No compartimos tus datos · Respuesta en 24h
+                <p className="text-xs text-gray-500 text-center flex items-center justify-center gap-4">
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck size={14} weight="duotone" className="text-green-600" aria-hidden="true" /> Datos protegidos
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Prohibit size={14} weight="duotone" className="text-red-600" aria-hidden="true" /> Sin spam
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Target size={14} weight="duotone" className="text-blue-600" aria-hidden="true" /> Respuesta en 24h
+                  </span>
                 </p>
               </form>
             </div>
@@ -367,7 +395,7 @@ const Contact = memo(() => {
               {/* Beneficios */}
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                  <span className="text-3xl">🎯</span>
+                  <ListChecks size={24} weight="duotone" className="text-green-600" aria-hidden="true" />
                   ¿Qué incluye tu auditoría gratuita?
                 </h3>
                 <ul className="space-y-4">
@@ -380,7 +408,7 @@ const Contact = memo(() => {
                   ].map((benefit, index) => (
                     <li key={index} className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">✓</span>
+                        <CheckCircle size={14} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                       </div>
                       <span className="text-gray-700 font-medium">{benefit}</span>
                     </li>
@@ -391,7 +419,7 @@ const Contact = memo(() => {
               {/* Contacto directo */}
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white">
                 <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                  <span className="text-3xl">💬</span>
+                  <Phone size={24} weight="duotone" aria-hidden="true" />
                   ¿Prefieres hablar directamente?
                 </h3>
                 <div className="space-y-4">
@@ -405,7 +433,7 @@ const Contact = memo(() => {
                     aria-label="Abrir WhatsApp para solicitar auditoría"
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-xl">📱</span>
+                      <WhatsappLogo size={22} weight="duotone" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold">WhatsApp</div>
@@ -414,13 +442,13 @@ const Contact = memo(() => {
                   </a>
                   <a
                     href="mailto:hola@verticeagency.com"
-                    className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duration-300"
+                    className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duración-300"
                     onClick={handleEmailClick}
                     data-cta="contact_email"
                     aria-label="Abrir correo para escribir a Vértice Agency"
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-xl">📧</span>
+                      <EnvelopeSimple size={22} weight="duotone" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold">Email</div>

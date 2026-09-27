@@ -1,6 +1,13 @@
 // src/components/Newsletter.tsx
 import { memo, useCallback, useMemo, useState } from 'react';
 import { trackEvent, trackFormSubmission } from '../utils/analytics';
+import {
+  EnvelopeSimple,
+  Sparkle,
+  PaperPlaneRight,
+  ShieldCheck,
+  Prohibit,
+} from 'phosphor-react';
 
 type NewsletterProps = {
   variant?: 'hero' | 'footer' | 'popup';
@@ -13,13 +20,13 @@ interface NewsletterFormData {
   interests: string;
 }
 
-/** Mailchimp (ya rellenado) */
+/** Mailchimp (ya configurado) */
 const MAILCHIMP_ACTION = 'https://app.us16.list-manage.com/subscribe/post';
 const MAILCHIMP_U = 'aac2f72631ef7a81172f12475';
 const MAILCHIMP_ID = '98573a8f1b';
 const HONEYPOT_NAME = `b_${MAILCHIMP_U}_${MAILCHIMP_ID}`;
 
-// UTM/referrer/landing ligera (sin dependencia externa)
+// UTM/referrer/landing ligera
 const getLightUTM = () => {
   try {
     const qs = new URLSearchParams(location.search);
@@ -30,7 +37,7 @@ const getLightUTM = () => {
       utm_term: qs.get('utm_term') || '',
       utm_content: qs.get('utm_content') || '',
       referrer: document.referrer || '',
-      landing: location.pathname + location.search
+      landing: location.pathname + location.search,
     };
   } catch {
     return {};
@@ -41,7 +48,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   const [formData, setFormData] = useState<NewsletterFormData>({
     email: '',
     name: '',
-    interests: ''
+    interests: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -56,18 +63,15 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
   const lastName  = (formData.name || '').trim().split(' ').slice(1).join(' ') || '';
 
   const handleSubmit = useCallback(() => {
-    // No prevenimos el submit porque MC se envía en _blank.
     if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Tracking unificado (GA4 + Pixel) usando helpers
     try {
       trackFormSubmission('newsletter', { variant, ...utm });
       trackEvent('newsletter_submit', { variant, ...utm });
     } catch {}
 
-    // Como el form abre MC en _blank, aquí redirigimos esta pestaña
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
@@ -77,57 +81,55 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
     }, 800);
   }, [variant, onSuccess, utm, isSubmitting]);
 
-  const getVariantStyles = () => {
+  const styles = (() => {
     switch (variant) {
       case 'hero':
         return {
           container: 'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
-          title: 'text-2xl font-bold text-gray-900 mb-4',
-          subtitle: 'text-gray-600 mb-6',
-          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
+          title: 'text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2',
+          subtitle: 'text-gray-600 mb-6 text-center',
+          button: 'arc-pill w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105',
         };
       case 'footer':
         return {
           container: 'bg-gray-800 rounded-xl p-6',
-          title: 'text-xl font-bold text-white mb-3',
-          subtitle: 'text-gray-300 mb-4',
-          button: 'w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors'
+          title: 'text-xl font-bold text-white mb-2 flex items-center justify-center gap-2',
+          subtitle: 'text-gray-300 mb-4 text-center',
+          button: 'arc-pill w-full bg-blue-600 text-white py-3 px-4 font-semibold hover:bg-blue-700 transition-colors',
         };
       case 'popup':
         return {
           container: 'bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto',
-          title: 'text-2xl font-bold text-gray-900 mb-4 text-center',
+          title: 'text-2xl font-bold text-gray-900 mb-2 text-center flex items-center justify-center gap-2',
           subtitle: 'text-gray-600 mb-6 text-center',
-          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300'
+          button: 'arc-pill w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 font-bold text-lg hover:shadow-2xl transition-all duration-300',
         };
       default:
         return {
           container: 'bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-lg mx-auto',
-          title: 'text-2xl font-bold text-gray-900 mb-4',
+          title: 'text-2xl font-bold text-gray-900 mb-2',
           subtitle: 'text-gray-600 mb-6',
-          button: 'w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
+          button: 'arc-pill w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105',
         };
     }
-  };
-
-  const styles = getVariantStyles();
+  })();
 
   return (
     <div className={styles.container}>
       <div className="text-center mb-6">
         <h3 className={styles.title}>
-          {variant === 'hero' && '🚀 Recibe Tips Exclusivos de IA'}
-          {variant === 'footer' && '📧 Newsletter Semanal'}
-          {variant === 'popup' && '✨ ¡No te pierdas nada!'}
+          {variant === 'hero'   && (<><Sparkle size={22} weight="duotone" className="text-blue-600" /> Recibe Tips Exclusivos de IA</>)}
+          {variant === 'footer' && (<><EnvelopeSimple size={20} weight="duotone" className="text-blue-300" /> Newsletter Semanal</>)}
+          {variant === 'popup'  && (<><Sparkle size={22} weight="duotone" className="text-purple-600" /> ¡No te pierdas nada!</>)}
         </h3>
         <p className={styles.subtitle}>
-          {variant === 'hero' && 'Estrategias semanales de marketing digital e IA directo a tu email'}
+          {variant === 'hero'   && 'Estrategias semanales de marketing digital e IA directo a tu email'}
           {variant === 'footer' && 'Mantente al día con las últimas tendencias'}
-          {variant === 'popup' && 'Únete a +1,000 emprendedores que reciben contenido exclusivo'}
+          {variant === 'popup'  && 'Únete a +1,000 emprendedores que reciben contenido exclusivo'}
         </p>
       </div>
 
-      {/* Mailchimp nativo (evita CORS). Abre en pestaña nueva; nosotros redirigimos a /gracias.html */}
+      {/* Mailchimp nativo */}
       <form
         action={`${MAILCHIMP_ACTION}?u=${encodeURIComponent(MAILCHIMP_U)}&id=${encodeURIComponent(MAILCHIMP_ID)}`}
         method="post"
@@ -137,7 +139,6 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         className="space-y-4"
         aria-label="Formulario de suscripción al newsletter"
       >
-        {/* Campos visibles */}
         <div>
           <input
             type="text"
@@ -190,7 +191,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         <input type="hidden" name="LNAME" value={lastName} />
         <input type="hidden" name="tags" value={`Newsletter, ${variant}, vertice-agency`} />
 
-        {/* UTM / Referrer / Landing (MC los ignora si no existen en la lista) */}
+        {/* UTM / Referrer / Landing */}
         <input type="hidden" name="utm_source" value={(utm as any).utm_source || ''} />
         <input type="hidden" name="utm_medium" value={(utm as any).utm_medium || ''} />
         <input type="hidden" name="utm_campaign" value={(utm as any).utm_campaign || ''} />
@@ -206,13 +207,12 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
 
         {/* Estado accesible */}
         <div className="sr-only" aria-live="polite">
-          {submitStatus === 'success' ? 'Suscripción realizada correctamente' :
-           submitStatus === 'error'   ? 'Error al suscribirse' : ''}
+          {submitStatus === 'success' ? 'Suscripción realizada correctamente'
+            : submitStatus === 'error' ? 'Error al suscribirse' : ''}
         </div>
 
         {submitStatus === 'success' && (
           <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-green-800 text-center">
-            <div className="text-2xl mb-2">🎉</div>
             <div className="font-bold mb-1">¡Bienvenido a la comunidad!</div>
             <div className="text-sm text-green-700">Revisa tu email para confirmar tu suscripción.</div>
           </div>
@@ -220,7 +220,6 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
 
         {submitStatus === 'error' && (
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800 text-center">
-            <div className="text-xl mb-1">❌</div>
             <div className="font-semibold text-sm">Error al suscribirse. Por favor, intenta nuevamente.</div>
           </div>
         )}
@@ -234,20 +233,25 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               Suscribiendo...
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              Suscribirse Gratis <span className="text-lg">→</span>
+              Suscribirse Gratis <PaperPlaneRight size={18} weight="duotone" />
             </span>
           )}
         </button>
       </form>
 
       {variant === 'hero' && (
-        <div className="mt-4 text-center text-xs text-gray-500">
-          📧 Sin spam • ❌ Unsubscribe cuando quieras • 🔒 Datos protegidos
+        <div className="mt-4 text-center text-xs text-gray-500 flex items-center justify-center gap-4">
+          <span className="inline-flex items-center gap-1">
+            <ShieldCheck size={14} weight="duotone" className="text-green-600" /> Datos protegidos
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Prohibit size={14} weight="duotone" className="text-red-600" /> Unsubscribe cuando quieras
+          </span>
         </div>
       )}
     </div>

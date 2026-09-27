@@ -205,3 +205,76 @@ header .cta,
 header [data-cta="header_free_audit"] {
   box-shadow: 0 10px 24px rgba(79, 70, 229, 0.25);
 }
+.icon-glow {
+  filter: drop-shadow(0 10px 28px rgba(59,130,246,.28));
+}
+.icon-glow-strong {
+  filter: drop-shadow(0 14px 36px rgba(124,58,237,.28));
+}
+/* --- ARCO BAJO PILLS (badges, botones pastilla) --- */
+.arc-pill {
+  position: relative;
+  isolation: isolate;
+}
+.arc-pill::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-6px;              /* separa el arco del borde */
+  transform:translateX(-50%);
+  width:62%;
+  height:14px;
+  border-radius:999px;
+  background:
+    radial-gradient(120% 100% at 50% 0%,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.55) 35%,
+      rgba(255,255,255,0) 70%);
+  filter: blur(3px);
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* --- ARCO BAJO CARDS GRANDES (stats, CTA, módulos) --- */
+.arc-card{
+  position: relative;
+  isolation: isolate;
+}
+.arc-card::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-10px;
+  transform:translateX(-50%);
+  width:70%;
+  height:18px;
+  border-radius:999px;
+  background:
+    radial-gradient(140% 110% at 50% 0%,
+      rgba(255,255,255,.85) 0%,
+      rgba(255,255,255,.45) 35%,
+      rgba(255,255,255,0) 70%);
+  filter: blur(4px);
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* --- GLOSS en círculos de iconos (tope brillante) --- */
+.gloss-circle{
+  position: relative;
+  overflow: hidden;
+}
+.gloss-circle::before{
+  content:"";
+  position:absolute;
+  inset:auto 8% 55% 8%;     /* banda superior */
+  border-radius:999px;
+  background:linear-gradient(
+    to bottom,
+    rgba(255,255,255,.9),
+    rgba(255,255,255,.35) 55%,
+    rgba(255,255,255,0)
+  );
+  filter: blur(1.2px);
+  pointer-events:none;
+}
