@@ -223,11 +223,12 @@ export const measurePerformance = () => {
       const nav = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
       if (nav && nav.length) {
         const p = nav[0];
+        // Navigation Timing L2: los tiempos son relativos a timeOrigin; startTime (0) = inicio de la navegación
         const data = {
-          page_load_time: Math.round(p.loadEventEnd - p.navigationStart),
-          dom_content_loaded: Math.round(p.domContentLoadedEventEnd - p.navigationStart),
-          first_paint: Math.round(p.responseEnd - p.navigationStart),
-          ttfb: Math.round(p.responseStart - p.navigationStart),
+          page_load_time: Math.round(p.loadEventEnd - p.startTime),
+          dom_content_loaded: Math.round(p.domContentLoadedEventEnd - p.startTime),
+          first_paint: Math.round(p.responseEnd - p.startTime),
+          ttfb: Math.round(p.responseStart - p.startTime),
           page_url: window.location.href,
           connection_type: (navigator as any).connection?.effectiveType || 'unknown',
         };

@@ -63,9 +63,6 @@ const CursorTrail = memo(({
     if (!enabled) return;
 
     const step = () => {
-      const now = Date.now();
-      const isInactive = now - lastMoveTs.current > inactivityMs;
-
       setTrail(prev => {
         if (prev.length === 0) return prev;
 
@@ -93,13 +90,8 @@ const CursorTrail = memo(({
           p.angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
         }
 
-        // 3) Si está inactivo, desvanecer todo empujándolo levemente al punto actual (para no “temblar”)
-        if (isInactive) {
-          const midX = window.innerWidth / 2;
-          const midY = window.innerHeight / 2;
-          // No movemos a centro (sería brusco); solo dejamos que el fade/opacity haga el trabajo
-          // Mantener posiciones actuales es suficiente.
-        }
+        // 3) Si está inactivo no movemos al centro (sería brusco); el fade/opacity hace el trabajo
+        // y mantener las posiciones actuales es suficiente.
 
         return next;
       });

@@ -139,8 +139,6 @@ function App() {
       <CursorTrail
         leaderSize={44}      // tamaño de la flecha líder (más grande)
         trailLength={10}     // cantidad de flechas en el rastro
-        delayStep={28}       // retraso entre flechas (ms)
-        enabledMinWidth={768} // oculta el efecto en móviles/tablet pequeños
       />
     </div>
   )

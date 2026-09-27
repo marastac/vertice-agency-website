@@ -1,7 +1,6 @@
-import React from "react";
 import {
   Rocket, ChartLineUp, Target, ChatCircleText, Robot, TrendUp,
-  MegaphoneSimple, EnvelopeSimple, Phone, Smartphone, Lock,
+  MegaphoneSimple, EnvelopeSimple, Phone, DeviceMobile, Lock,
   CheckCircle, Globe, Heart, Gift, Star, Prohibit, Monitor, Camera,
   Briefcase, Lightning
 } from "phosphor-react";
@@ -22,7 +21,7 @@ const MAP: Record<IconName, any> = {
   ads: MegaphoneSimple,
   mail: EnvelopeSimple,
   phone: Phone,
-  smartphone: Smartphone,
+  smartphone: DeviceMobile,
   lock: Lock,
   check: CheckCircle,
   globe: Globe,

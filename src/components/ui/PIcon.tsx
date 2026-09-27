@@ -1,6 +1,6 @@
 // Mejora visual: Wrapper de íconos Phosphor con tamaños y estilo de marca unificados
 import {
-  BookOpen, Camera, Briefcase, TwitterLogo, Tv, Lightning, CheckCircle,
+  BookOpen, Camera, Briefcase, TwitterLogo, Television, Lightning, CheckCircle,
   Robot, TrendUp, Target, ChatCircleDots, ChartBar, Rocket, Handshake,
   GlobeHemisphereWest, Heart, Sparkle, Gift, Star, Lock, Confetti, Prohibit,
   Phone, DeviceMobile, EnvelopeSimple
@@ -19,7 +19,7 @@ const ICONS: Record<PIconName, React.ComponentType<IconProps>> = {
   camera: Camera,
   briefcase: Briefcase,
   twitter: TwitterLogo,
-  tv: Tv,
+  tv: Television,
   lightning: Lightning,
   check: CheckCircle,
   robot: Robot,
