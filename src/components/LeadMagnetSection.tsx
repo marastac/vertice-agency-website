@@ -256,9 +256,8 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
               <div className="text-6xl mb-4">🎉</div>
               <div className="text-2xl font-bold text-green-800 mb-3">¡Descarga en progreso!</div>
               <div className="text-green-700 mb-4">
-                Te enviamos el enlace a tu correo. También te suscribimos a nuestro newsletter con contenido exclusivo.
+                La descarga se abrirá en una nueva pestaña. Si no se abre, revisa que tu navegador no haya bloqueado la ventana emergente.
               </div>
-              <div className="text-sm text-green-600">Si no llega en 5 minutos, revisa tu carpeta de spam.</div>
               <button
                 onClick={onClose}
                 className="mt-6 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
@@ -316,12 +315,11 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
                   aria-invalid={submitStatus === 'error' && !formData.business_type}
                 >
                   <option value="">Selecciona tu tipo de negocio</option>
-                  <option value="coach">Coach / Mentor</option>
-                  <option value="consultor">Consultor</option>
-                  <option value="creador">Creador de Contenido</option>
-                  <option value="infoproductos">Infoproductos</option>
-                  <option value="servicios">Servicios Profesionales</option>
-                  <option value="ecommerce">E-commerce</option>
+                  <option value="empresa">Empresa / pyme</option>
+                  <option value="servicios">Servicios profesionales</option>
+                  <option value="negocio_digital">Negocio digital / e-commerce</option>
+                  <option value="formacion">Formación / infoproductos</option>
+                  <option value="independiente">Profesional independiente</option>
                   <option value="otro">Otro</option>
                 </select>
               </div>
@@ -450,13 +448,13 @@ const LeadMagnetSection = memo(() => {
                 Recursos Gratuitos
               </div>
               <h2 id="recursos-heading" className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-4">
-                Acelera tu crecimiento con{' '}
+                Recursos{' '}
                 <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  recursos premium
+                  gratuitos
                 </span>
               </h2>
               <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-                Guías, templates y checklists creados por expertos en IA y marketing digital — listos para usar.
+                Guías, plantillas y checklists gratuitos, listos para usar.
               </p>
             </div>
 
@@ -534,15 +532,15 @@ const LeadMagnetSection = memo(() => {
             {/* CTA Bottom */}
             <div className="text-center">
               <p className="text-gray-600 mb-6">
-                ¿Necesitas una estrategia personalizada? Agenda tu auditoría gratuita.
+                ¿Prefieres una solución a medida para tu negocio? Solicita una evaluación gratuita.
               </p>
               <button
                 onClick={scrollToContact}
                 className="arc-pill inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-full font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 data-cta="leadmagnet_bottom_cta_audit"
-                aria-label="Ir a contacto para solicitar auditoría gratuita"
+                aria-label="Ir a contacto para solicitar una evaluación gratuita"
               >
-                Solicitar Auditoría Gratuita
+                Solicitar evaluación gratuita
                 <ArrowRight size={20} weight="duotone" aria-hidden="true" />
               </button>
             </div>

@@ -94,15 +94,19 @@ const Header = memo(() => {
   }, [isMobileMenuOpen]);
 
   const navigationItems = [
-    { name: 'Inicio', id: 'home', cta: 'nav_home' },
     { name: 'Servicios', id: 'servicios', cta: 'nav_servicios' },
+    { name: 'Lead AI', id: 'lead-ai', cta: 'nav_lead_ai' },
+    { name: 'Cómo trabajamos', id: 'como-trabajamos', cta: 'nav_como_trabajamos' },
     { name: 'Nosotros', id: 'nosotros', cta: 'nav_nosotros' },
-    { name: 'Casos de Éxito', id: 'casos', cta: 'nav_casos' },
     { name: 'Contacto', id: 'contact', cta: 'nav_contact' },
   ];
 
   // === Visual classes ===
-  const headerBg = isScrolled
+  // Con el menú móvil abierto se usa el mismo fondo sólido que al hacer scroll,
+  // para que los enlaces no se superpongan con el Hero.
+  const solid = isScrolled || isMobileMenuOpen;
+
+  const headerBg = solid
     ? 'bg-gradient-to-r from-gray-900/90 to-blue-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-white/10 shadow-xl'
     : 'bg-transparent';
 
@@ -114,13 +118,13 @@ const Header = memo(() => {
     ? 'from-white to-white'
     : 'from-blue-600 to-purple-600';
 
-  const burgerBar = isScrolled ? 'bg-white' : 'bg-gray-600';
+  const burgerBar = solid ? 'bg-white' : 'bg-gray-600';
 
-  const mobileLink = isScrolled
+  const mobileLink = solid
     ? 'text-white/90 hover:text-white hover:bg-white/10'
     : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50';
 
-  const mobileSectionBorder = isScrolled ? 'border-white/10' : 'border-gray-200';
+  const mobileSectionBorder = solid ? 'border-white/10' : 'border-gray-200';
 
   return (
     <header
@@ -140,7 +144,7 @@ const Header = memo(() => {
           >
             <span
               className={`relative inline-flex items-center justify-center rounded-xl ${
-                isScrolled ? 'shadow-md' : ''
+                solid ? 'shadow-md' : ''
               }`}
             >
               <img
@@ -154,7 +158,7 @@ const Header = memo(() => {
               />
             </span>
             <div
-              className={`text-2xl md:text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
+              className={`text-2xl md:text-3xl font-black whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
             >
               Vértice Agency
             </div>
@@ -162,7 +166,7 @@ const Header = memo(() => {
 
           {/* Navigation - Desktop */}
           <nav
-            className="hidden lg:flex items-center space-x-1"
+            className="hidden xl:flex items-center space-x-1"
             aria-label="Navegación principal"
           >
             {navigationItems.map((item) => (
@@ -170,7 +174,7 @@ const Header = memo(() => {
                 key={item.id}
                 type="button"
                 onClick={() => scrollToSection(item.id)}
-                className={`relative px-4 py-2 font-semibold transition-all duration-300 focus-visible:outline-none ${linkBase}`}
+                className={`relative px-3 py-2 font-semibold whitespace-nowrap transition-all duration-300 focus-visible:outline-none ${linkBase}`}
                 data-cta={item.cta}
                 aria-label={`Ir a ${item.name}`}
               >
@@ -183,7 +187,7 @@ const Header = memo(() => {
           </nav>
 
           {/* CTA - Desktop */}
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <button
               type="button"
               onClick={() => {
@@ -193,19 +197,19 @@ const Header = memo(() => {
                 });
                 scrollToSection('contact', 'header_cta');
               }}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+              className="flex items-center gap-2 whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1"
               data-cta="header_auditoria"
-              aria-label="Ir a Contacto para solicitar Auditoría Gratuita"
+              aria-label="Ir a Contacto para solicitar una evaluación gratuita"
             >
               <Rocket size={18} weight="duotone" aria-hidden="true" />
-              Auditoría Gratuita
+              Solicitar evaluación
             </button>
           </div>
 
           {/* Mobile menu button */}
           <button
             type="button"
-            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="xl:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
             onClick={toggleMobileMenu}
             aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={isMobileMenuOpen}
@@ -234,13 +238,13 @@ const Header = memo(() => {
         <div
           id="mobile-menu"
           ref={menuRef}
-          className={`lg:hidden transition-all duration-300 overflow-hidden ${
+          className={`xl:hidden transition-all duration-300 overflow-hidden ${
             isMobileMenuOpen ? 'max-h-96 pb-6' : 'max-h-0'
           }`}
         >
           <nav
             className={`flex flex-col space-y-4 pt-4 border-t ${mobileSectionBorder} ${
-              isScrolled ? 'text-white/90' : ''
+              solid ? 'text-white/90' : ''
             }`}
             aria-label="Navegación móvil"
           >
@@ -267,10 +271,10 @@ const Header = memo(() => {
               }}
               className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all duration-300 mx-4 mt-4"
               data-cta="header_auditoria_mobile"
-              aria-label="Ir a Contacto para solicitar Auditoría Gratuita"
+              aria-label="Ir a Contacto para solicitar una evaluación gratuita"
             >
               <Rocket size={18} weight="duotone" aria-hidden="true" />
-              Auditoría Gratuita
+              Solicitar evaluación
             </button>
           </nav>
         </div>

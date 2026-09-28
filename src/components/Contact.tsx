@@ -1,6 +1,7 @@
 // src/components/Contact.tsx
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { trackEvent, trackFormSubmission } from '../utils/analytics';
+import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
 import {
   Phone,
   Rocket,
@@ -39,6 +40,7 @@ const Contact = memo(() => {
     phone: '',
     business: '',
     message: '',
+    interest: '', // opcional: área de interés
     website: '' // honeypot (no mostrar)
   });
 
@@ -119,8 +121,9 @@ const Contact = memo(() => {
             email: formData.email,
             phone: formData.phone,
             business: formData.business,
+            interest: formData.interest,
             message: formData.message,
-            form_name: 'Auditoría Gratuita',
+            form_name: 'Evaluación Gratuita',
             source: 'Vértice Agency Website',
             timestamp: new Date().toISOString(),
             page_url: window.location.href,
@@ -131,10 +134,10 @@ const Contact = memo(() => {
 
         if (response.ok) {
           setSubmitStatus('success');
-          setFormData({ name: '', email: '', phone: '', business: '', message: '', website: '' });
+          setFormData({ name: '', email: '', phone: '', business: '', message: '', interest: '', website: '' });
 
           // Tracking unificado (GA4 + Pixel) con helper
-          trackFormSubmission('contact', { form_name: 'Auditoría Gratuita', ...utm });
+          trackFormSubmission('contact', { form_name: 'Evaluación Gratuita', ...utm });
 
           // LinkedIn (si existe)
           try {
@@ -194,14 +197,14 @@ const Contact = memo(() => {
               id="contact-heading"
               className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6"
             >
-              ¿Listo para{' '}
+              Cuéntanos qué quieres{' '}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                transformar tu negocio?
+                automatizar, construir o integrar
               </span>
             </h2>
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-              Agenda tu <strong>auditoría gratuita</strong> (sin compromiso) y descubre cómo la IA puede
-              multiplicar tus resultados desde la primera semana.
+              Solicita una <strong>evaluación gratuita y sin compromiso</strong>. Revisamos tu caso y te proponemos
+              por dónde empezar.
             </p>
           </div>
 
@@ -211,10 +214,10 @@ const Contact = memo(() => {
               <div className="mb-8">
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 inline-flex items-center gap-3">
                   <Rocket size={24} weight="duotone" className="text-blue-600" aria-hidden="true" />
-                  Auditoría Gratuita con IA
+                  Evaluación gratuita
                 </h3>
                 <p className="text-gray-600">
-                  Completa el formulario y recibe tu análisis personalizado en 24 horas. Sin ventas agresivas, solo valor.
+                  Completa el formulario: revisaremos tu solicitud y nos pondremos en contacto contigo. Sin compromiso.
                 </p>
               </div>
 
@@ -262,13 +265,13 @@ const Contact = memo(() => {
                     required
                     aria-invalid={submitStatus === 'error' && !isValidEmail(formData.email)}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
-                    placeholder="tu@firma.com"
+                    placeholder="tu@empresa.com"
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">WhatsApp *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">WhatsApp o teléfono *</label>
                   <input
                     type="tel"
                     name="phone"
@@ -277,7 +280,7 @@ const Contact = memo(() => {
                     required
                     aria-invalid={submitStatus === 'error' && !isValidPhone(formData.phone)}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
-                    placeholder="+51 999 999 999"
+                    placeholder="Incluye prefijo de país"
                     autoComplete="tel"
                   />
                 </div>
@@ -292,14 +295,30 @@ const Contact = memo(() => {
                     aria-invalid={submitStatus === 'error' && !formData.business}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
                   >
-                    <option value="">Selecciona tu tipo de negocio</option>
-                    <option value="coach">Coach / Mentor</option>
-                    <option value="consultor">Consultor</option>
-                    <option value="creador">Creador de Contenido</option>
-                    <option value="infoproductos">Infoproductos</option>
-                    <option value="servicios">Servicios Profesionales</option>
-                    <option value="ecommerce">E-commerce</option>
+                    <option value="">Selecciona una opción</option>
+                    <option value="empresa">Empresa / pyme</option>
+                    <option value="servicios">Servicios profesionales</option>
+                    <option value="negocio_digital">Negocio digital / e-commerce</option>
+                    <option value="formacion">Formación / infoproductos</option>
+                    <option value="independiente">Profesional independiente</option>
                     <option value="otro">Otro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">¿Qué necesitas? (opcional)</label>
+                  <select
+                    name="interest"
+                    value={formData.interest}
+                    onChange={handleChange}
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
+                  >
+                    <option value="">Selecciona un área</option>
+                    <option value="automatizacion">Automatización e IA</option>
+                    <option value="desarrollo_web">Desarrollo web</option>
+                    <option value="integraciones">Integraciones y sistemas</option>
+                    <option value="lead_ai">Lead AI</option>
+                    <option value="no_lo_se">Aún no lo sé</option>
                   </select>
                 </div>
 
@@ -314,7 +333,7 @@ const Contact = memo(() => {
                     required
                     rows={4}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duración-300 text-lg resize-none"
-                    placeholder="Describe tu mayor desafío en marketing digital..."
+                    placeholder="Qué proceso quieres mejorar, qué herramientas usas hoy..."
                   ></textarea>
                 </div>
 
@@ -335,7 +354,7 @@ const Contact = memo(() => {
                       </div>
                       <div className="text-xl font-bold mb-2">¡Solicitud enviada con éxito!</div>
                       <div className="text-green-700 mb-4">
-                        Te contactaremos en las próximas 24 horas para agendar tu auditoría gratuita.
+                        Revisaremos tu solicitud y nos pondremos en contacto contigo para coordinar la evaluación.
                       </div>
                       <div className="text-sm text-green-600">Revisa tu email (incluye la carpeta de spam).</div>
                     </div>
@@ -349,7 +368,7 @@ const Contact = memo(() => {
                       <div>
                         <div className="font-semibold">Revisa tus datos e inténtalo de nuevo</div>
                         <div className="text-sm text-red-600">
-                          Email y WhatsApp válidos, nombre, tipo de negocio y desafío son obligatorios.
+                          Email y teléfono válidos, nombre, tipo de negocio y mensaje son obligatorios.
                         </div>
                       </div>
                     </div>
@@ -361,7 +380,7 @@ const Contact = memo(() => {
                   disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-5 px-6 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-cta="contact_submit"
-                  aria-label="Enviar formulario para solicitar Auditoría Gratuita"
+                  aria-label="Enviar formulario para solicitar una evaluación gratuita"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -370,7 +389,7 @@ const Contact = memo(() => {
                     </span>
                   ) : (
                     <span className="inline-flex items-center justify-center gap-2">
-                      Solicitar Auditoría Gratuita
+                      Solicitar evaluación gratuita
                       <PaperPlaneRight size={20} weight="duotone" aria-hidden="true" />
                     </span>
                   )}
@@ -384,7 +403,7 @@ const Contact = memo(() => {
                     <Prohibit size={14} weight="duotone" className="text-red-600" aria-hidden="true" /> Sin spam
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Target size={14} weight="duotone" className="text-blue-600" aria-hidden="true" /> Respuesta en 24h
+                    <Target size={14} weight="duotone" className="text-blue-600" aria-hidden="true" /> Sin compromiso
                   </span>
                 </p>
               </form>
@@ -396,15 +415,14 @@ const Contact = memo(() => {
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                   <ListChecks size={24} weight="duotone" className="text-green-600" aria-hidden="true" />
-                  ¿Qué incluye tu auditoría gratuita?
+                  ¿Qué incluye la evaluación?
                 </h3>
                 <ul className="space-y-4">
                   {[
-                    'Análisis completo de tu estrategia actual',
-                    'Identificación de oportunidades con IA',
-                    'Plan de acción personalizado',
-                    'Proyección de resultados esperados',
-                    'Propuesta de automatización específica'
+                    'Revisión de tus procesos y herramientas actuales',
+                    'Oportunidades concretas de automatización e integración',
+                    'Recomendación de por dónde empezar',
+                    'Propuesta con alcance y plazos si decides avanzar'
                   ].map((benefit, index) => (
                     <li key={index} className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -423,25 +441,27 @@ const Contact = memo(() => {
                   ¿Prefieres hablar directamente?
                 </h3>
                 <div className="space-y-4">
+                  {/* TODO(ANTES DEL DEPLOY DE LANZAMIENTO): WhatsApp y email son provisionales.
+                      Se cambian en un solo lugar: src/config/contact.ts */}
                   <a
-                    href="https://wa.me/51999999999?text=Hola%2C%20quiero%20solicitar%20mi%20auditor%C3%ADa%20gratuita%20de%20IA"
+                    href={whatsappUrl('Hola, quiero solicitar una evaluación gratuita')}
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duration-300"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handleWhatsAppClick}
                     data-cta="contact_whatsapp"
-                    aria-label="Abrir WhatsApp para solicitar auditoría"
+                    aria-label="Abrir WhatsApp para solicitar una evaluación"
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                       <WhatsappLogo size={22} weight="duotone" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-semibold">WhatsApp</div>
-                      <div className="text-blue-100">+51 999 999 999</div>
+                      <div className="text-blue-100">{WHATSAPP_DISPLAY}</div>
                     </div>
                   </a>
                   <a
-                    href="mailto:hola@verticeagency.com"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duración-300"
                     onClick={handleEmailClick}
                     data-cta="contact_email"
@@ -452,7 +472,7 @@ const Contact = memo(() => {
                     </div>
                     <div>
                       <div className="font-semibold">Email</div>
-                      <div className="text-blue-100">hola@verticeagency.com</div>
+                      <div className="text-blue-100 text-sm sm:text-base break-words">{CONTACT_EMAIL}</div>
                     </div>
                   </a>
                 </div>

@@ -1,15 +1,10 @@
 // src/components/Footer.tsx
 import { memo, useCallback, useEffect, useRef } from 'react';
 import Newsletter from './Newsletter';
+import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
 
 // Mejora visual: íconos Phosphor consistentes (reemplazan emojis)
-import type { IconProps } from 'phosphor-react';
 import {
-  FacebookLogo,
-  InstagramLogo,
-  LinkedinLogo,
-  TwitterLogo,
-  YoutubeLogo,
   EnvelopeSimple,
   DeviceMobile,
   GlobeHemisphereWest,
@@ -17,51 +12,29 @@ import {
   Heart,
 } from 'phosphor-react';
 
+// Redes sociales: se añadirán cuando existan perfiles reales (no mostrar enlaces vacíos).
+
 const Footer = memo(() => {
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const openExternalLink = useCallback((url: string) => {
-    // Evita abrir pestañas vacías si aún no hay URL real
-    if (!url || url === '#') return;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, []);
-
   const currentYear = new Date().getFullYear();
 
-  // Mejora visual: tipamos el ícono para usar el mismo componente con props
-  type IconCmp = React.ComponentType<IconProps>;
-
-  const socialLinks: Array<{
-    name: string;
-    Icon: IconCmp;
-    url: string;
-    color: string;
-  }> = [
-    { name: 'Facebook',  Icon: FacebookLogo,  url: '#', color: 'hover:text-blue-400' },
-    { name: 'Instagram', Icon: InstagramLogo, url: '#', color: 'hover:text-pink-400' },
-    { name: 'LinkedIn',  Icon: LinkedinLogo,  url: '#', color: 'hover:text-blue-300' },
-    { name: 'Twitter',   Icon: TwitterLogo,   url: '#', color: 'hover:text-blue-400' },
-    { name: 'YouTube',   Icon: YoutubeLogo,   url: '#', color: 'hover:text-red-400'  },
-  ];
-
   const services = [
-    'Automatización con IA',
-    'Estrategias de Crecimiento',
-    'Publicidad Inteligente',
-    'Marketing de Contenido',
-    'Analytics Avanzado',
-    'Implementación Rápida',
+    { name: 'Automatización e IA', id: 'servicios' },
+    { name: 'Desarrollo web', id: 'servicios' },
+    { name: 'Integraciones y sistemas', id: 'servicios' },
+    { name: 'Lead AI', id: 'lead-ai' },
   ];
 
   const quickLinks = [
-    { name: 'Inicio', id: 'home' },
     { name: 'Servicios', id: 'servicios' },
-    { name: 'Casos de Éxito', id: 'casos' },
-    { name: 'Blog', url: '#' },
-    { name: 'Recursos', id: 'recursos' }, // → scroll a #recursos
+    { name: 'Cómo trabajamos', id: 'como-trabajamos' },
+    { name: 'Capacidades', id: 'capacidades' },
+    { name: 'Nosotros', id: 'nosotros' },
+    { name: 'Contacto', id: 'contact' },
   ];
 
   // GA4: registrar vista del bloque de newsletter en el footer
@@ -109,10 +82,10 @@ const Footer = memo(() => {
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
                   <Rocket size={22} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                 </span>
-                Recibe estrategias exclusivas de marketing digital
+                Ideas prácticas para automatizar y ordenar tu negocio
               </h3>
               <p className="text-blue-100 mb-8 text-lg">
-                Tips semanales, casos de éxito y las últimas tendencias en IA aplicada al marketing
+                Automatización, webs, integraciones y aprendizajes de lo que construimos. Sin spam.
               </p>
 
               <div className="max-w-md mx-auto">
@@ -132,45 +105,17 @@ const Footer = memo(() => {
                   Vértice Agency
                 </div>
                 <p className="text-blue-100 mb-6 max-w-md leading-relaxed">
-                  Transformamos negocios digitales con estrategias de marketing innovadoras y soluciones de inteligencia artificial que generan resultados medibles y escalables.
+                  Automatización, desarrollo web e integraciones para empresas y negocios digitales. Construimos sistemas
+                  que reducen el trabajo manual y ayudan a captar y gestionar clientes.
                 </p>
 
-                {/* Redes sociales */}
-                <div className="flex space-x-4 mb-6">
-                  {socialLinks.map(({ name, Icon, url, color }) => (
-                    <a
-                      key={name}
-                      href={url}
-                      className={`w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl transition-all duration-300 hover:bg-white/20 backdrop-blur-sm ${color} hover:scale-110 hover:-translate-y-1`}
-                      title={name}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        (window as any)?.gtag?.('event', 'select_content', {
-                          content_type: 'social',
-                          item_id: name.toLowerCase(),
-                          section: 'footer',
-                        });
-                        openExternalLink(url);
-                      }}
-                      data-cta={`footer_social_${name.toLowerCase()}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Abrir ${name} en nueva pestaña`}
-                    >
-                      {/* Mejora visual: ícono de red social (Phosphor) */}
-                      <Icon size={24} weight="duotone" aria-hidden="true" />
-                    </a>
-                  ))}
-                </div>
-
-                {/* Certificaciones (dejamos emojis aquí como badges visuales cortos) */}
+                {/* Áreas (sustituye a los badges de certificaciones, que no tenemos) */}
                 <div className="flex flex-wrap gap-3">
-                  <div className="bg-white/10 px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">
-                    🏆 Google Partner
-                  </div>
-                  <div className="bg-white/10 px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">
-                    🔥 Meta Business Partner
-                  </div>
+                  {['Automatización', 'Desarrollo web', 'Integraciones'].map((area) => (
+                    <div key={area} className="bg-white/10 px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">
+                      {area}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -185,13 +130,13 @@ const Footer = memo(() => {
                         onClick={() => {
                           (window as any)?.gtag?.('event', 'select_content', {
                             content_type: 'quicklink',
-                            item_id: (link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                            item_id: link.id.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
                             section: 'footer',
                           });
-                          return link.id ? scrollToSection(link.id) : openExternalLink(link.url!);
+                          scrollToSection(link.id);
                         }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
-                        data-cta={`footer_quicklink_${(link.id || link.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
+                        data-cta={`footer_quicklink_${link.id.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
                         aria-label={`Ir a ${link.name}`}
                       >
                         {link.name}
@@ -206,22 +151,22 @@ const Footer = memo(() => {
                 <h3 className="text-lg font-bold mb-6 text-white">Servicios</h3>
                 <ul className="space-y-3">
                   {services.map((service) => (
-                    <li key={service}>
+                    <li key={service.name}>
                       <button
                         type="button"
                         onClick={() => {
                           (window as any)?.gtag?.('event', 'select_content', {
                             content_type: 'service_link',
-                            item_id: service.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                            item_id: service.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
                             section: 'footer',
                           });
-                          scrollToSection('servicios');
+                          scrollToSection(service.id);
                         }}
                         className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block text-left"
-                        data-cta={`footer_service_${service.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
-                        aria-label={`Ver servicio: ${service}`}
+                        data-cta={`footer_service_${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
+                        aria-label={`Ver servicio: ${service.name}`}
                       >
-                        {service}
+                        {service.name}
                       </button>
                     </li>
                   ))}
@@ -240,12 +185,13 @@ const Footer = memo(() => {
                     </div>
                     <div>
                       <div className="font-semibold text-white">Email</div>
+                      {/* TODO(ANTES DEL DEPLOY DE LANZAMIENTO): email y WhatsApp provisionales → src/config/contact.ts */}
                       <a
-                        href="mailto:hola@verticeagency.com"
-                        className="hover:text-white transition-colors"
+                        href={`mailto:${CONTACT_EMAIL}`}
+                        className="hover:text-white transition-colors break-words"
                         data-cta="footer_email"
                       >
-                        hola@verticeagency.com
+                        {CONTACT_EMAIL}
                       </a>
                     </div>
                   </li>
@@ -259,7 +205,7 @@ const Footer = memo(() => {
                     <div>
                       <div className="font-semibold text-white">WhatsApp</div>
                       <a
-                        href="https://wa.me/51907001499"
+                        href={whatsappUrl()}
                         className="hover:text-white transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -270,7 +216,7 @@ const Footer = memo(() => {
                           });
                         }}
                       >
-                        +51 907 001 499
+                        {WHATSAPP_DISPLAY}
                       </a>
                     </div>
                   </li>
@@ -282,8 +228,8 @@ const Footer = memo(() => {
                       <GlobeHemisphereWest size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
                     </div>
                     <div>
-                      <div className="font-semibold text-white">Cobertura</div>
-                      <span>Perú & España</span>
+                      <div className="font-semibold text-white">Atención remota</div>
+                      <span>Perú · España · Estados Unidos</span>
                     </div>
                   </li>
                 </ul>
@@ -299,9 +245,9 @@ const Footer = memo(() => {
                   }}
                   className="mt-6 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105"
                   data-cta="footer_auditoria"
-                  aria-label="Ir a la sección de contacto para solicitar Auditoría Gratuita"
+                  aria-label="Ir a la sección de contacto para solicitar una evaluación gratuita"
                 >
-                  Auditoría Gratuita
+                  Solicitar evaluación
                 </button>
               </div>
             </div>
@@ -341,11 +287,11 @@ const Footer = memo(() => {
                 ))}
               </div>
 
-              <div className="text-blue-200 text-sm inline-flex items-center gap-2">
-                Made with
+              <div className="text-blue-200 text-sm inline-flex items-center gap-2 whitespace-nowrap">
+                Hecho con
                 {/* Mejora visual: corazón Phosphor en lugar de emoji */}
                 <Heart size={16} weight="duotone" className="text-pink-300" aria-hidden="true" />
-                in Peru & Spain
+                por Vértice
               </div>
             </div>
           </div>

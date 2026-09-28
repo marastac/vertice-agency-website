@@ -1,12 +1,12 @@
 // src/App.tsx
 import { useEffect } from 'react'
 import Hero from './components/Hero'
-import ClientLogos from './components/ClientLogos'
 import Features from './components/Features'
-import LeadMagnetSection from './components/LeadMagnetSection'
-import Newsletter from './components/Newsletter'
+import LeadAI from './components/LeadAI'
+import HowWeWork from './components/HowWeWork'
+import Capabilities from './components/Capabilities'
+import AboutUs from './components/AboutUs'
 import Contact from './components/Contact'
-import AboutUs from './components/AboutUs' // Sección Nosotros (debajo de Contact)
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { initAnalytics } from './utils/analytics'
@@ -85,53 +85,15 @@ function App() {
     <div className="min-h-screen bg-white">
       <Header />
       <main>
-        <Hero />
-        <ClientLogos />
-
-        {/* 🎁 Lead Magnets Section */}
-        <LeadMagnetSection />
-
-        <Features />
-
-        {/* 📧 Newsletter Section - Optimizada */}
-        <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  🚀 Únete a +1,000 Emprendedores Exitosos
-                </h2>
-                <p className="text-xl text-blue-100 mb-6">
-                  Recibe estrategias exclusivas de IA y marketing digital cada semana
-                </p>
-              </div>
-
-              <div className="max-w-2xl mx-auto mb-8">
-                <Newsletter variant="hero" />
-              </div>
-
-              <div className="flex flex-wrap items-center justify-center gap-6 text-blue-100">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400 text-lg">✅</span>
-                  <span className="text-sm md:text-base">Contenido exclusivo semanal</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400 text-lg">✅</span>
-                  <span className="text-sm md:text-base">Tips prácticos de IA</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-green-400 text-lg">✅</span>
-                  <span className="text-sm md:text-base">Sin spam, cancela cuando quieras</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <Contact />
-
-        {/* 👥 Nosotros (debajo de Contact, como pediste) */}
-        <AboutUs />
+        <Hero />                {/* #home */}
+        <Features />            {/* #servicios — 3 pilares */}
+        <LeadAI />              {/* #lead-ai — producto propio */}
+        <HowWeWork />           {/* #como-trabajamos */}
+        <Capabilities />        {/* #capacidades — tecnologías y proyectos propios */}
+        <AboutUs />             {/* #nosotros */}
+        {/* Recursos (#recursos) retirado temporalmente: los recursos actuales no encajan con el
+            posicionamiento. LeadMagnetSection se conserva como base para los recursos futuros. */}
+        <Contact />             {/* #contact — CTA final */}
       </main>
       <Footer />
 

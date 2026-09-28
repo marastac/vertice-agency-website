@@ -43,18 +43,19 @@
 </head>
 <body>
   <main class="card" aria-live="polite">
-    <div class="badge" id="ty-badge">🎉 ¡Gracias por tu interés!</div>
-    <h1 id="ty-title">¡Gracias por unirte!</h1>
-    <p id="ty-body">Hemos recibido tu información correctamente. Revisa tu bandeja de entrada (y spam) para confirmar.</p>
-    <p id="ty-extra">Mientras tanto, puedes volver al inicio y seguir explorando.</p>
+    <div class="badge" id="ty-badge">¡Gracias por tu interés!</div>
+    <h1 id="ty-title">Gracias por contactar con Vértice</h1>
+    <p id="ty-body">Puedes volver al inicio para conocer nuestros servicios.</p>
+    <p id="ty-extra"></p>
 
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <a class="btn" href="/">← Volver al inicio</a>
-      <a class="btn secondary" id="cta-recursos" href="/#recursos" style="display:none">🎁 Ver recursos gratuitos</a>
-      <a class="btn secondary" id="cta-contact" href="/#contact" style="display:none">📞 Solicitar auditoría</a>
+      <a class="btn secondary" id="cta-lead-ai" href="/#lead-ai" style="display:none">Conocer Lead AI</a>
+      <a class="btn secondary" id="cta-servicios" href="/#servicios" style="display:none">Ver servicios</a>
+      <a class="btn secondary" id="cta-contact" href="/#contact" style="display:none">Solicitar evaluación</a>
     </div>
 
-    <p class="muted">Vértice Agency • Auditoría sin compromiso · Resultados medibles · Soporte en español</p>
+    <p class="muted">Vértice Agency · Automatización · Desarrollo web · Integraciones</p>
   </main>
 
   <script>
@@ -63,7 +64,6 @@
       const rawSrc = (qs.get('src') || '').toLowerCase();
       // Soportar ambos: ?src=magnet y ?src=leadmagnet
       const src = rawSrc === 'leadmagnet' ? 'magnet' : rawSrc;
-      const name = qs.get('name') || '';
 
       // GA4: evento de vista y conversión por tipo
       try {
@@ -97,30 +97,33 @@
       const $title = document.getElementById('ty-title');
       const $body  = document.getElementById('ty-body');
       const $extra = document.getElementById('ty-extra');
-      const $ctaRec = document.getElementById('cta-recursos');
+      const $ctaLeadAi = document.getElementById('cta-lead-ai');
+      const $ctaServicios = document.getElementById('cta-servicios');
       const $ctaContact = document.getElementById('cta-contact');
 
-      if (src === 'magnet') {
-        $badge.textContent = '⬇️ Tu descarga está lista';
-        $title.textContent = '¡Recurso enviado!';
-        $body.textContent  = name
-          ? `Hemos enviado el recurso “${decodeURIComponent(name)}” a tu correo.`
-          : 'Hemos enviado tu recurso a tu correo.';
-        $extra.textContent = 'Si no lo ves en 5 minutos, revisa tu carpeta de spam.';
-        $ctaRec.style.display = 'inline-flex';
+      // Mensajes: describir solo lo que realmente ocurre (no afirmar envíos de email ni confirmaciones).
+      if (src === 'contact') {
+        $badge.textContent = '✅ Solicitud recibida';
+        $title.textContent = '¡Gracias por tu solicitud!';
+        $body.textContent  = 'Hemos recibido tus datos. Revisaremos tu solicitud y nos pondremos en contacto contigo para coordinar la evaluación.';
+        $extra.textContent = 'Mientras tanto, puedes conocer Lead AI, nuestra solución para captar y calificar leads.';
+        $ctaLeadAi.style.display = 'inline-flex';
       } else if (src === 'newsletter') {
-        $badge.textContent = '📬 ¡Bienvenid@ al newsletter!';
-        $title.textContent = '¡Suscripción confirmada!';
-        $body.textContent  = 'Desde hoy recibirás estrategias y recursos de marketing con IA.';
-        $extra.textContent = 'Revisa tu correo para la confirmación (puede llegar a spam).';
-        $ctaRec.style.display = 'inline-flex';
+        $badge.textContent = '📬 Newsletter';
+        $title.textContent = '¡Gracias por suscribirte!';
+        $body.textContent  = 'Tu solicitud de suscripción se ha enviado. Si se requiere confirmación, sigue las indicaciones de la pestaña que se abrió.';
+        $extra.textContent = '¿Tienes un proceso que quieras automatizar o integrar? Cuéntanoslo.';
+        $ctaServicios.style.display = 'inline-flex';
         $ctaContact.style.display = 'inline-flex';
-      } else if (src === 'contact') {
-        $badge.textContent = '✅ ¡Gracias por confiar en nosotros!';
-        $title.textContent = '¡Solicitud de auditoría recibida!';
-        $body.textContent  = 'En las próximas 24 horas te contactaremos por WhatsApp o email para coordinar tu auditoría gratuita.';
-        $extra.textContent = 'Mientras tanto, puedes explorar nuestros recursos gratuitos.';
-        $ctaRec.style.display = 'inline-flex';
+      } else if (src === 'magnet') {
+        // Compatibilidad con enlaces antiguos de la sección Recursos (retirada de la landing).
+        $badge.textContent = '⬇️ Descarga';
+        $title.textContent = '¡Gracias por tu interés!';
+        $body.textContent  = 'La descarga debería haberse abierto en una nueva pestaña.';
+        $extra.textContent = '';
+        $ctaServicios.style.display = 'inline-flex';
+      } else {
+        $ctaServicios.style.display = 'inline-flex';
       }
     })();
   </script>

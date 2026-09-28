@@ -118,14 +118,14 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
     <div className={styles.container}>
       <div className="text-center mb-6">
         <h3 className={styles.title}>
-          {variant === 'hero'   && (<><Sparkle size={22} weight="duotone" className="text-blue-600" /> Recibe Tips Exclusivos de IA</>)}
-          {variant === 'footer' && (<><EnvelopeSimple size={20} weight="duotone" className="text-blue-300" /> Newsletter Semanal</>)}
-          {variant === 'popup'  && (<><Sparkle size={22} weight="duotone" className="text-purple-600" /> ¡No te pierdas nada!</>)}
+          {variant === 'hero'   && (<><Sparkle size={22} weight="duotone" className="text-blue-600" /> Ideas prácticas en tu email</>)}
+          {variant === 'footer' && (<><EnvelopeSimple size={20} weight="duotone" className="text-blue-300" /> Newsletter</>)}
+          {variant === 'popup'  && (<><Sparkle size={22} weight="duotone" className="text-purple-600" /> Ideas prácticas en tu email</>)}
         </h3>
         <p className={styles.subtitle}>
-          {variant === 'hero'   && 'Estrategias semanales de marketing digital e IA directo a tu email'}
-          {variant === 'footer' && 'Mantente al día con las últimas tendencias'}
-          {variant === 'popup'  && 'Únete a +1,000 emprendedores que reciben contenido exclusivo'}
+          {variant === 'hero'   && 'Automatización, webs e integraciones para negocios, sin spam'}
+          {variant === 'footer' && 'Contenido práctico, sin spam'}
+          {variant === 'popup'  && 'Automatización, webs e integraciones para negocios, sin spam'}
         </p>
       </div>
 
@@ -146,7 +146,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="Tu nombre"
             autoComplete="name"
             aria-label="Nombre"
@@ -160,7 +160,7 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             placeholder="tu@email.com"
             autoComplete="email"
             aria-label="Email"
@@ -173,15 +173,14 @@ const Newsletter = memo(({ variant = 'hero', onSuccess }: NewsletterProps) => {
             value={formData.interests}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 [&>option]:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
             aria-label="Intereses"
           >
             <option value="">¿Qué te interesa más?</option>
-            <option value="ia-automatizacion">IA y Automatización</option>
-            <option value="marketing-digital">Marketing Digital</option>
-            <option value="lead-generation">Generación de Leads</option>
-            <option value="conversion-optimization">Optimización de Conversiones</option>
-            <option value="chatbots">Chatbots y Atención al Cliente</option>
+            <option value="ia-automatizacion">Automatización e IA</option>
+            <option value="desarrollo-web">Desarrollo web</option>
+            <option value="integraciones">Integraciones y sistemas</option>
+            <option value="lead-generation">Captación y gestión de leads</option>
             <option value="todo">Todo lo anterior</option>
           </select>
         </div>
