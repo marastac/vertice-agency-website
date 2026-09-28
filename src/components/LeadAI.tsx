@@ -13,6 +13,7 @@ import {
   UsersThree,
   ArrowRight,
 } from 'phosphor-react';
+import { selectContactInterest } from '../utils/contactIntent';
 
 type Capability = {
   title: string;
@@ -56,8 +57,7 @@ const STEPS = [
 const LeadAI = memo(() => {
   const onCta = useCallback(() => {
     window.gtag?.('event', 'select_content', { content_type: 'cta', item_id: 'lead_ai_demo' });
-    const el = document.getElementById('contact');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    selectContactInterest('lead_ai_demo');
   }, []);
 
   return (
@@ -87,7 +87,8 @@ const LeadAI = memo(() => {
             <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed">
               Lead AI es la solución que desarrollamos en Vértice para la captación y calificación inicial de clientes
               potenciales. Combina formularios con puntuación, un asistente de chat con IA y un panel de gestión, y envía
-              tus leads a HubSpot cuando lo necesitas. Puede formar parte de una implementación de Vértice.
+              tus leads a HubSpot cuando lo necesitas. Puede formar parte de una implementación de Vértice o puedes
+              solicitar una demo.
             </p>
 
             {/* Flujo */}
@@ -103,15 +104,15 @@ const LeadAI = memo(() => {
             </ol>
 
             <div className="flex flex-col gap-4 items-start">
-              <button
-                type="button"
+              <a
+                href="#contact"
                 onClick={onCta}
                 className="arc-pill inline-flex items-center justify-center gap-3 whitespace-nowrap bg-white text-blue-700 px-6 sm:px-8 py-4 font-bold text-base sm:text-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 data-cta="lead_ai_demo"
               >
-                Solicitar una demo de Lead AI
+                Solicitar demo de Lead AI
                 <ArrowRight size={20} weight="bold" aria-hidden="true" />
-              </button>
+              </a>
               <p className="inline-flex items-center gap-2 text-sm text-blue-100">
                 <UsersThree size={18} weight="duotone" aria-hidden="true" />
                 Incluye trabajo en equipo con invitaciones y roles.

@@ -2,6 +2,8 @@
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { trackEvent, trackFormSubmission } from '../utils/analytics';
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
+import { INTEREST_EVENT, INTEREST_OPTIONS } from '../utils/contactIntent';
+import type { Interest } from '../utils/contactIntent';
 import {
   Phone,
   Rocket,
@@ -37,17 +39,30 @@ const Contact = memo(() => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    business: '',
+    phone: '', // opcional
+    company: '',
+    interest: '', // qué necesita (preseleccionable desde los CTAs)
     message: '',
-    interest: '', // opcional: área de interés
     website: '' // honeypot (no mostrar)
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  // invalid = datos incompletos; error = fallo de envío (red/servidor)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'invalid' | 'error'>('idle');
 
   const sectionRef = useRef<HTMLElement | null>(null);
+
+  // Preselección de "¿Qué necesitas?" cuando el usuario llega desde un CTA de servicio / Lead AI
+  useEffect(() => {
+    const onInterest = (e: Event) => {
+      const interest = (e as CustomEvent<Interest>).detail;
+      if (INTEREST_OPTIONS.some((o) => o.value === interest)) {
+        setFormData((prev) => ({ ...prev, interest }));
+      }
+    };
+    window.addEventListener(INTEREST_EVENT, onInterest);
+    return () => window.removeEventListener(INTEREST_EVENT, onInterest);
+  }, []);
 
   // Vista de sección (view_item) con IntersectionObserver
   useEffect(() => {
@@ -72,8 +87,10 @@ const Contact = memo(() => {
   }, []);
 
   const isValidEmail = (v: string) => /\S+@\S+\.\S+/.test(v.trim());
-  const isValidPhone = (v: string) => /^[\d+\s()-]{7,}$/.test(v.trim());
+  // Teléfono opcional: solo se valida si se rellena
+  const isValidPhone = (v: string) => v.trim() === '' || /^[\d+\s()-]{7,}$/.test(v.trim());
   const isValidName = (v: string) => v.trim().length >= 2;
+  const isFilled = (v: string) => v.trim().length > 0;
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -96,10 +113,10 @@ const Contact = memo(() => {
         !isValidName(formData.name) ||
         !isValidEmail(formData.email) ||
         !isValidPhone(formData.phone) ||
-        !formData.business ||
-        !formData.message
+        !formData.interest ||
+        !isFilled(formData.message)
       ) {
-        setSubmitStatus('error');
+        setSubmitStatus('invalid');
         return;
       }
 
@@ -120,7 +137,7 @@ const Contact = memo(() => {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            business: formData.business,
+            company: formData.company,
             interest: formData.interest,
             message: formData.message,
             form_name: 'Evaluación Gratuita',
@@ -134,10 +151,11 @@ const Contact = memo(() => {
 
         if (response.ok) {
           setSubmitStatus('success');
-          setFormData({ name: '', email: '', phone: '', business: '', message: '', interest: '', website: '' });
+          const submittedInterest = formData.interest;
+          setFormData({ name: '', email: '', phone: '', company: '', interest: '', message: '', website: '' });
 
           // Tracking unificado (GA4 + Pixel) con helper
-          trackFormSubmission('contact', { form_name: 'Evaluación Gratuita', ...utm });
+          trackFormSubmission('contact', { form_name: 'Evaluación Gratuita', interest: submittedInterest, ...utm });
 
           // LinkedIn (si existe)
           try {
@@ -241,29 +259,31 @@ const Contact = memo(() => {
                 />
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Nombre completo *</label>
+                  <label htmlFor="contact-name" className="block text-sm font-semibold text-gray-700 mb-3">Nombre *</label>
                   <input
+                    id="contact-name"
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    aria-invalid={submitStatus === 'error' && !isValidName(formData.name)}
+                    aria-invalid={submitStatus === 'invalid' && !isValidName(formData.name)}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
-                    placeholder="Tu nombre completo"
+                    placeholder="Tu nombre"
                     autoComplete="name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Email empresarial *</label>
+                  <label htmlFor="contact-email" className="block text-sm font-semibold text-gray-700 mb-3">Email *</label>
                   <input
+                    id="contact-email"
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    aria-invalid={submitStatus === 'error' && !isValidEmail(formData.email)}
+                    aria-invalid={submitStatus === 'invalid' && !isValidEmail(formData.email)}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
                     placeholder="tu@empresa.com"
                     autoComplete="email"
@@ -271,14 +291,16 @@ const Contact = memo(() => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">WhatsApp o teléfono *</label>
+                  <label htmlFor="contact-phone" className="block text-sm font-semibold text-gray-700 mb-3">
+                    Teléfono o WhatsApp <span className="font-normal text-gray-500">(opcional)</span>
+                  </label>
                   <input
+                    id="contact-phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    required
-                    aria-invalid={submitStatus === 'error' && !isValidPhone(formData.phone)}
+                    aria-invalid={submitStatus === 'invalid' && !isValidPhone(formData.phone)}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
                     placeholder="Incluye prefijo de país"
                     autoComplete="tel"
@@ -286,54 +308,53 @@ const Contact = memo(() => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Tipo de negocio *</label>
-                  <select
-                    name="business"
-                    value={formData.business}
+                  <label htmlFor="contact-company" className="block text-sm font-semibold text-gray-700 mb-3">
+                    Empresa o negocio <span className="font-normal text-gray-500">(opcional)</span>
+                  </label>
+                  <input
+                    id="contact-company"
+                    type="text"
+                    name="company"
+                    value={formData.company}
                     onChange={handleChange}
-                    required
-                    aria-invalid={submitStatus === 'error' && !formData.business}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
-                  >
-                    <option value="">Selecciona una opción</option>
-                    <option value="empresa">Empresa / pyme</option>
-                    <option value="servicios">Servicios profesionales</option>
-                    <option value="negocio_digital">Negocio digital / e-commerce</option>
-                    <option value="formacion">Formación / infoproductos</option>
-                    <option value="independiente">Profesional independiente</option>
-                    <option value="otro">Otro</option>
-                  </select>
+                    placeholder="Tu empresa o negocio"
+                    autoComplete="organization"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">¿Qué necesitas? (opcional)</label>
+                  <label htmlFor="contact-interest" className="block text-sm font-semibold text-gray-700 mb-3">¿Qué necesitas? *</label>
                   <select
+                    id="contact-interest"
                     name="interest"
                     value={formData.interest}
                     onChange={handleChange}
+                    required
+                    aria-invalid={submitStatus === 'invalid' && !formData.interest}
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg"
                   >
-                    <option value="">Selecciona un área</option>
-                    <option value="automatizacion">Automatización e IA</option>
-                    <option value="desarrollo_web">Desarrollo web</option>
-                    <option value="integraciones">Integraciones y sistemas</option>
-                    <option value="lead_ai">Lead AI</option>
-                    <option value="no_lo_se">Aún no lo sé</option>
+                    <option value="">Selecciona una opción</option>
+                    {INTEREST_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Cuéntanos tu desafío principal *
+                  <label htmlFor="contact-message" className="block text-sm font-semibold text-gray-700 mb-3">
+                    Cuéntanos brevemente tu proyecto *
                   </label>
                   <textarea
+                    id="contact-message"
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     required
                     rows={4}
-                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duración-300 text-lg resize-none"
-                    placeholder="Qué proceso quieres mejorar, qué herramientas usas hoy..."
+                    aria-invalid={submitStatus === 'invalid' && !isFilled(formData.message)}
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-lg resize-none"
+                    placeholder="Qué quieres construir o mejorar y qué herramientas usas hoy"
                   ></textarea>
                 </div>
 
@@ -341,8 +362,10 @@ const Contact = memo(() => {
                 <div id="contact-status" className="sr-only" aria-live="polite">
                   {submitStatus === 'success'
                     ? 'Solicitud enviada correctamente'
+                    : submitStatus === 'invalid'
+                    ? 'Faltan datos obligatorios'
                     : submitStatus === 'error'
-                    ? 'Ocurrió un error'
+                    ? 'No se pudo enviar la solicitud'
                     : ''}
                 </div>
 
@@ -353,10 +376,23 @@ const Contact = memo(() => {
                         <CheckCircle size={28} weight="duotone" className="text-green-600" aria-hidden="true" />
                       </div>
                       <div className="text-xl font-bold mb-2">¡Solicitud enviada con éxito!</div>
-                      <div className="text-green-700 mb-4">
+                      <div className="text-green-700">
                         Revisaremos tu solicitud y nos pondremos en contacto contigo para coordinar la evaluación.
                       </div>
-                      <div className="text-sm text-green-600">Revisa tu email (incluye la carpeta de spam).</div>
+                    </div>
+                  </div>
+                )}
+
+                {submitStatus === 'invalid' && (
+                  <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-800">
+                    <div className="flex items-center gap-2">
+                      <Prohibit size={20} weight="duotone" className="text-red-600" aria-hidden="true" />
+                      <div>
+                        <div className="font-semibold">Revisa tus datos e inténtalo de nuevo</div>
+                        <div className="text-sm text-red-600">
+                          Nombre, email válido, qué necesitas y una breve descripción son obligatorios.
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -366,9 +402,9 @@ const Contact = memo(() => {
                     <div className="flex items-center gap-2">
                       <Prohibit size={20} weight="duotone" className="text-red-600" aria-hidden="true" />
                       <div>
-                        <div className="font-semibold">Revisa tus datos e inténtalo de nuevo</div>
+                        <div className="font-semibold">No pudimos enviar tu solicitud</div>
                         <div className="text-sm text-red-600">
-                          Email y teléfono válidos, nombre, tipo de negocio y mensaje son obligatorios.
+                          Inténtalo de nuevo en unos minutos o escríbenos directamente por WhatsApp o email.
                         </div>
                       </div>
                     </div>

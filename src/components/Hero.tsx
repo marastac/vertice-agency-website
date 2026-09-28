@@ -2,11 +2,12 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { Robot, Browsers, PlugsConnected, Lightning, CheckCircle, ArrowRight } from 'phosphor-react';
 
-// Los tres pilares de la oferta (sin cifras: no publicamos métricas que no podamos respaldar)
+// Beneficio primero (título) y la oferta que lo resuelve después (etiqueta).
+// Sin cifras: no publicamos métricas que no podamos respaldar.
 const PILLARS = [
-  { icon: <Robot size={32} weight="duotone" color="#fff" />, title: 'Automatización e IA', label: 'Menos tareas manuales', color: 'from-blue-500 to-blue-600' },
-  { icon: <Browsers size={32} weight="duotone" color="#fff" />, title: 'Desarrollo web', label: 'Webs que captan clientes', color: 'from-green-500 to-green-600' },
-  { icon: <PlugsConnected size={32} weight="duotone" color="#fff" />, title: 'Integraciones y sistemas', label: 'Herramientas conectadas', color: 'from-purple-500 to-purple-600' },
+  { icon: <Browsers size={32} weight="duotone" color="#fff" />, title: 'Más oportunidades', label: 'Web & Conversión', color: 'from-green-500 to-green-600' },
+  { icon: <Robot size={32} weight="duotone" color="#fff" />, title: 'Menos trabajo manual', label: 'Automatización & IA', color: 'from-blue-500 to-blue-600' },
+  { icon: <PlugsConnected size={32} weight="duotone" color="#fff" />, title: 'Herramientas conectadas', label: 'Sistemas & Integraciones', color: 'from-purple-500 to-purple-600' },
 ];
 
 const Hero = memo(() => {
@@ -63,7 +64,7 @@ const Hero = memo(() => {
         {/* badge superior */}
         <div className="arc-pill mb-8 inline-flex items-center gap-3 border-2 border-blue-200 bg-white/60 px-6 py-3 text-base font-semibold text-blue-700 shadow-md">
           <Lightning size={20} weight="duotone" className="text-blue-600" />
-          Automatización · Desarrollo web · Integraciones
+          Web · Automatización · Integraciones · IA aplicada
         </div>
 
         <h1 className="mb-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.5)]">
@@ -77,9 +78,9 @@ const Hero = memo(() => {
         </h1>
 
         <p className="mb-10 text-xl sm:text-2xl text-white font-semibold drop-shadow-[0_4px_14px_rgba(0,0,0,0.5)] lg:px-16 leading-relaxed">
-          Ayudamos a <strong>empresas y negocios digitales</strong> a <strong>automatizar procesos</strong>,{' '}
-          <strong>captar y gestionar clientes</strong> y <strong>conectar sus herramientas</strong>, para reducir el
-          trabajo manual y crecer con orden.
+          <strong>Menos tareas manuales</strong>, <strong>más clientes bien atendidos</strong> y{' '}
+          <strong>herramientas que trabajan juntas</strong>. Construimos la web, las automatizaciones y las integraciones
+          que tu empresa o negocio digital necesita para crecer con orden.
         </p>
 
         {/* Pilares */}

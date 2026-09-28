@@ -1,6 +1,5 @@
 // src/components/Footer.tsx
-import { memo, useCallback, useEffect, useRef } from 'react';
-import Newsletter from './Newsletter';
+import { memo, useCallback } from 'react';
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
 
 // Mejora visual: íconos Phosphor consistentes (reemplazan emojis)
@@ -8,7 +7,6 @@ import {
   EnvelopeSimple,
   DeviceMobile,
   GlobeHemisphereWest,
-  Rocket,
   Heart,
 } from 'phosphor-react';
 
@@ -23,9 +21,9 @@ const Footer = memo(() => {
   const currentYear = new Date().getFullYear();
 
   const services = [
-    { name: 'Automatización e IA', id: 'servicios' },
-    { name: 'Desarrollo web', id: 'servicios' },
-    { name: 'Integraciones y sistemas', id: 'servicios' },
+    { name: 'Web & Conversión', id: 'servicios' },
+    { name: 'Automatización & IA', id: 'servicios' },
+    { name: 'Sistemas & Integraciones', id: 'servicios' },
     { name: 'Lead AI', id: 'lead-ai' },
   ];
 
@@ -36,29 +34,6 @@ const Footer = memo(() => {
     { name: 'Nosotros', id: 'nosotros' },
     { name: 'Contacto', id: 'contact' },
   ];
-
-  // GA4: registrar vista del bloque de newsletter en el footer
-  const nlRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const node = nlRef.current;
-    if (!node) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            (window as any)?.gtag?.('event', 'view_item', {
-              item_category: 'newsletter',
-              section: 'footer',
-              engagement_time_msec: 1000,
-            });
-          }
-        });
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, []);
 
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white overflow-hidden">
@@ -73,28 +48,6 @@ const Footer = memo(() => {
       />
 
       <div className="relative">
-        {/* Newsletter Section -> usa el componente real */}
-        <div className="border-b border-white/10 py-16" ref={nlRef}>
-          <div className="container">
-            <div className="max-w-4xl mx-auto text-center">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 inline-flex items-center gap-3">
-                {/* Mejora visual: reemplazo del emoji 🚀 por ícono Phosphor */}
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-                  <Rocket size={22} weight="duotone" color="#FFFFFF" aria-hidden="true" />
-                </span>
-                Ideas prácticas para automatizar y ordenar tu negocio
-              </h3>
-              <p className="text-blue-100 mb-8 text-lg">
-                Automatización, webs, integraciones y aprendizajes de lo que construimos. Sin spam.
-              </p>
-
-              <div className="max-w-md mx-auto">
-                <Newsletter variant="footer" />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Main Footer Content */}
         <div className="py-16">
           <div className="container">

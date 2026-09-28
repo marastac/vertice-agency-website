@@ -52,10 +52,9 @@
       <a class="btn" href="/">← Volver al inicio</a>
       <a class="btn secondary" id="cta-lead-ai" href="/#lead-ai" style="display:none">Conocer Lead AI</a>
       <a class="btn secondary" id="cta-servicios" href="/#servicios" style="display:none">Ver servicios</a>
-      <a class="btn secondary" id="cta-contact" href="/#contact" style="display:none">Solicitar evaluación</a>
     </div>
 
-    <p class="muted">Vértice Agency · Automatización · Desarrollo web · Integraciones</p>
+    <p class="muted">Vértice Agency · Web · Automatización · Integraciones</p>
   </main>
 
   <script>
@@ -70,7 +69,6 @@
         gtag('event','thank_you_view',{source: src || 'unknown'});
         const map = {
           magnet:    { event: 'download', value: 75 },
-          newsletter:{ event: 'subscribe', value: 50 },
           contact:   { event: 'generate_lead', value: 100 }
         };
         if (map[src]) {
@@ -79,11 +77,10 @@
         }
       } catch (e) {}
 
-      // Pixel: evento según tipo (Subscribe es válido en Meta)
+      // Pixel: evento según tipo
       try {
         const pmap = {
           magnet:    { event: 'CompleteRegistration', value: 75 },
-          newsletter:{ event: 'Subscribe', value: 50 },
           contact:   { event: 'Lead', value: 100 }
         };
         if (pmap[src]) {
@@ -99,7 +96,6 @@
       const $extra = document.getElementById('ty-extra');
       const $ctaLeadAi = document.getElementById('cta-lead-ai');
       const $ctaServicios = document.getElementById('cta-servicios');
-      const $ctaContact = document.getElementById('cta-contact');
 
       // Mensajes: describir solo lo que realmente ocurre (no afirmar envíos de email ni confirmaciones).
       if (src === 'contact') {
@@ -108,13 +104,6 @@
         $body.textContent  = 'Hemos recibido tus datos. Revisaremos tu solicitud y nos pondremos en contacto contigo para coordinar la evaluación.';
         $extra.textContent = 'Mientras tanto, puedes conocer Lead AI, nuestra solución para captar y calificar leads.';
         $ctaLeadAi.style.display = 'inline-flex';
-      } else if (src === 'newsletter') {
-        $badge.textContent = '📬 Newsletter';
-        $title.textContent = '¡Gracias por suscribirte!';
-        $body.textContent  = 'Tu solicitud de suscripción se ha enviado. Si se requiere confirmación, sigue las indicaciones de la pestaña que se abrió.';
-        $extra.textContent = '¿Tienes un proceso que quieras automatizar o integrar? Cuéntanoslo.';
-        $ctaServicios.style.display = 'inline-flex';
-        $ctaContact.style.display = 'inline-flex';
       } else if (src === 'magnet') {
         // Compatibilidad con enlaces antiguos de la sección Recursos (retirada de la landing).
         $badge.textContent = '⬇️ Descarga';

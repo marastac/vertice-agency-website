@@ -15,7 +15,7 @@ type TechGroup = {
 const TECH_GROUPS: TechGroup[] = [
   { title: 'Desarrollo', items: ['React', 'TypeScript', 'Node.js', 'Tailwind CSS'], Icon: Code },
   { title: 'Datos e integraciones', items: ['PostgreSQL / Supabase', 'APIs REST', 'HubSpot API', 'OAuth'], Icon: Database },
-  { title: 'IA y automatización', items: ['Modelos de IA vía API', 'Formularios con puntuación', 'Email con Mailchimp'], Icon: Robot },
+  { title: 'IA y automatización', items: ['Modelos de IA vía API', 'Formularios con puntuación'], Icon: Robot },
   { title: 'Medición y despliegue', items: ['Google Analytics 4', 'Meta Pixel', 'Vercel'], Icon: ChartLineUp },
 ];
 
@@ -48,7 +48,7 @@ const PROJECTS: Project[] = [
     title: 'Web de Vértice',
     tag: 'Desarrollo web',
     description:
-      'Esta misma web: formularios conectados, newsletter con Mailchimp y medición de conversiones con GA4 y Meta Pixel.',
+      'Esta misma web: formulario de contacto conectado y medición de conversiones con GA4 y Meta Pixel.',
     stack: 'React · TypeScript · Vercel',
     Icon: Browsers,
   },
