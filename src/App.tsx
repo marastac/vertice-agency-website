@@ -9,93 +9,61 @@ import AboutUs from './components/AboutUs'
 import Contact from './components/Contact'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import CookieBanner from './components/CookieBanner'
+import LegalPage from './pages/LegalPage'
+import NotFound from './pages/NotFound'
+import { LEGAL_PAGES } from './pages/legalContent'
 import { initAnalytics } from './utils/analytics'
-import { initWebVitals } from './utils/webvitals'
 import CursorTrail from './components/CursorTrail' // ✨ Efecto de rastro del cursor (flechas)
+
+/** Ruta actual sin barra final (la web no usa router: cada página es una carga completa). */
+const currentPath = () => {
+  const p = window.location.pathname.replace(/\/+$/, '');
+  return p === '' ? '/' : p;
+};
+
+function Home() {
+  // Al llegar desde otra página con /#seccion, desplazarse a la sección cuando ya está renderizada.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id) return;
+    const raf = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <main>
+      <Hero />                {/* #home */}
+      <Features />            {/* #servicios — 3 pilares */}
+      <LeadAI />              {/* #lead-ai — producto propio */}
+      <HowWeWork />           {/* #como-trabajamos */}
+      <Capabilities />        {/* #capacidades — tecnologías y proyectos propios */}
+      <AboutUs />             {/* #nosotros */}
+      {/* Recursos (#recursos) retirado temporalmente: los recursos actuales no encajan con el
+          posicionamiento. LeadMagnetSection se conserva como base para los recursos futuros. */}
+      <Contact />             {/* #contact — CTA final */}
+    </main>
+  )
+}
 
 function App() {
   useEffect(() => {
-    // Inicializar analytics y Web Vitals
+    // GA4 / Meta Pixel se cargan SOLO según el consentimiento guardado (ver src/consent/consent.ts).
+    // Web Vitals se inicializa una única vez en main.tsx.
     initAnalytics();
-    initWebVitals();
-
-    // 🚀 Setup adicional de marketing (con cleanup)
-    const cleanup = setupMarketingTracking();
-    return () => {
-      cleanup?.();
-    };
   }, []);
 
-  const setupMarketingTracking = () => {
-    const cleanups: Array<() => void> = [];
-
-    // Facebook Pixel - eventos adicionales
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'PageView');
-
-      // Track scroll depth
-      let maxScroll = 0;
-      const trackScrollDepth = () => {
-        const total = document.body.scrollHeight - window.innerHeight;
-        if (total <= 0) return;
-        const scrollPercent = Math.round((window.scrollY / total) * 100);
-        if (scrollPercent > maxScroll && scrollPercent % 25 === 0) {
-          maxScroll = scrollPercent;
-          (window as any).fbq('trackCustom', 'ScrollDepth', { scroll_depth: scrollPercent });
-        }
-      };
-      window.addEventListener('scroll', trackScrollDepth, { passive: true });
-      cleanups.push(() => window.removeEventListener('scroll', trackScrollDepth));
-    }
-
-    // Google Analytics - eventos personalizados
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      // Track time on site
-      const startTime = Date.now();
-      const onBeforeUnload = () => {
-        const timeOnSite = Math.round((Date.now() - startTime) / 1000);
-        (window as any).gtag('event', 'time_on_site', {
-          value: timeOnSite,
-          event_category: 'engagement'
-        });
-      };
-      window.addEventListener('beforeunload', onBeforeUnload);
-      cleanups.push(() => window.removeEventListener('beforeunload', onBeforeUnload));
-
-      // Track CTA clicks
-      const onDocClick = (e: Event) => {
-        const target = e.target as HTMLElement;
-        const el = target?.closest?.('[data-cta]') as HTMLElement | null;
-        if (!el) return;
-        const ctaName = el.getAttribute('data-cta');
-        (window as any).gtag('event', 'cta_click', {
-          cta_name: ctaName,
-          page_location: window.location.href
-        });
-      };
-      document.addEventListener('click', onDocClick);
-      cleanups.push(() => document.removeEventListener('click', onDocClick));
-    }
-
-    // devolver cleanup único
-    return () => cleanups.forEach(fn => fn());
-  };
+  const path = currentPath();
+  const legal = LEGAL_PAGES.find((page) => page.path === path);
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main>
-        <Hero />                {/* #home */}
-        <Features />            {/* #servicios — 3 pilares */}
-        <LeadAI />              {/* #lead-ai — producto propio */}
-        <HowWeWork />           {/* #como-trabajamos */}
-        <Capabilities />        {/* #capacidades — tecnologías y proyectos propios */}
-        <AboutUs />             {/* #nosotros */}
-        {/* Recursos (#recursos) retirado temporalmente: los recursos actuales no encajan con el
-            posicionamiento. LeadMagnetSection se conserva como base para los recursos futuros. */}
-        <Contact />             {/* #contact — CTA final */}
-      </main>
+      {path === '/' ? <Home /> : legal ? <LegalPage page={legal} /> : <NotFound />}
       <Footer />
+
+      {/* Banner y panel de cookies (siempre disponibles; reabribles desde el footer) */}
+      <CookieBanner />
 
       {/* ✨ Rastro de cursor (flechas) — renderizado una sola vez a nivel raíz */}
       <CursorTrail

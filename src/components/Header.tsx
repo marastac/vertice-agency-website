@@ -83,6 +83,8 @@ const Header = memo(() => {
     });
     const el = document.getElementById(sectionId);
     if (el) el.scrollIntoView({ behavior: prefersNoMotion() ? 'auto' : 'smooth' });
+    // Fuera de la home (páginas legales, 404) la sección no existe: navegar a /#seccion.
+    else window.location.href = sectionId === 'home' ? '/' : `/#${sectionId}`;
     setIsMobileMenuOpen(false);
   }, []);
 

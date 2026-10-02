@@ -20,8 +20,7 @@ const send = (m: Metric) => {
     page: window.location.href,
     non_interaction: true,
   });
-
-  window.fbq?.('trackCustom', 'WebVital', { name, value, id: m.id });
+  // Métrica técnica: solo GA4 (con consentimiento analítico). No se envía a Meta.
 };
 
 export function reportWebVitals() {

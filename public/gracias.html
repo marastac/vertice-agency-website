@@ -7,8 +7,6 @@
   <meta name="robots" content="noindex,follow" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
-  <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
   <style>
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(135deg,#0ea5e9 0%,#7c3aed 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#111}
     .card{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:40px 32px;max-width:680px;width:92%}
@@ -19,29 +17,8 @@
     .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:2px solid #bfdbfe;background:linear-gradient(90deg,#eff6ff,#f5f3ff);color:#1d4ed8;font-weight:800;margin-bottom:12px}
     .muted{color:#6b7280;font-size:12px;margin-top:12px}
   </style>
-
-  <!-- GA4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-YN77ENMF5B', { page_title: 'Gracias', page_location: location.href });
-  </script>
-
-  <!-- Meta Pixel -->
-  <script>
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init','1419230625849117');
-    fbq('track','PageView');
-  </script>
-  <noscript>
-    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1"/>
-  </noscript>
+  <!-- GA4 y Meta Pixel se cargan más abajo SOLO si el visitante los autorizó (preferencia "maastac_consent",
+       la misma que guarda el banner de la web). Sin consentimiento: ninguna petición a Google ni a Meta. -->
 </head>
 <body>
   <main class="card" aria-live="polite">
@@ -66,30 +43,57 @@
       // Soportar ambos: ?src=magnet y ?src=leadmagnet
       const src = rawSrc === 'leadmagnet' ? 'magnet' : rawSrc;
 
-      // GA4: evento de vista y conversión por tipo
-      try {
-        gtag('event','thank_you_view',{source: src || 'unknown'});
-        const map = {
-          magnet:    { event: 'download', value: 75 },
-          contact:   { event: 'generate_lead', value: 100 }
-        };
-        if (map[src]) {
-          const m = map[src];
-          gtag('event', m.event, { value: m.value, currency: 'USD' });
-        }
-      } catch (e) {}
+      // ── Consentimiento: misma clave y estructura que src/consent/consent.ts ──
+      function readConsent() {
+        try {
+          const c = JSON.parse(localStorage.getItem('maastac_consent') || 'null');
+          if (c && c.version === 1 && typeof c.analytics === 'boolean' && typeof c.marketing === 'boolean') return c;
+        } catch (e) {}
+        return null; // sin decisión válida = nada autorizado
+      }
+      function loadScript(url) {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = url;
+        document.head.appendChild(s);
+      }
+      const consent = readConsent();
 
-      // Pixel: evento según tipo
-      try {
-        const pmap = {
-          magnet:    { event: 'CompleteRegistration', value: 75 },
-          contact:   { event: 'Lead', value: 100 }
-        };
-        if (pmap[src]) {
-          const m = pmap[src];
-          fbq('track', m.event, { value: m.value, currency: 'USD' });
-        }
-      } catch (e) {}
+      // GA4: SOLO con consentimiento analítico
+      if (consent && consent.analytics === true) {
+        try {
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () { window.dataLayer.push(arguments); };
+          gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+          gtag('js', new Date());
+          gtag('config', 'G-YN77ENMF5B', { page_title: 'Gracias', allow_google_signals: false, allow_ad_personalization_signals: false });
+          gtag('event', 'thank_you_view', { source: src || 'unknown' });
+          const map = {
+            magnet:    { event: 'download', value: 75 },
+            contact:   { event: 'generate_lead', value: 100 }
+          };
+          if (map[src]) gtag('event', map[src].event, { value: map[src].value, currency: 'USD' });
+          loadScript('https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B');
+        } catch (e) {}
+      }
+
+      // Meta Pixel: SOLO con consentimiento de marketing
+      if (consent && consent.marketing === true) {
+        try {
+          const n = window.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+          if (!window._fbq) window._fbq = n;
+          n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+          fbq('consent', 'grant');
+          fbq('init', '1419230625849117');
+          fbq('track', 'PageView');
+          const pmap = {
+            magnet:    { event: 'CompleteRegistration', value: 75 },
+            contact:   { event: 'Lead', value: 100 }
+          };
+          if (pmap[src]) fbq('track', pmap[src].event, { value: pmap[src].value, currency: 'USD' });
+          loadScript('https://connect.facebook.net/en_US/fbevents.js');
+        } catch (e) {}
+      }
 
       // Personalización de mensajes y CTAs
       const $badge = document.getElementById('ty-badge');

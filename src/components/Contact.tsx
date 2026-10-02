@@ -154,13 +154,14 @@ const Contact = memo(() => {
           const submittedInterest = formData.interest;
           setFormData({ name: '', email: '', phone: '', company: '', interest: '', message: '', website: '' });
 
-          // Tracking unificado (GA4 + Pixel) con helper
-          trackFormSubmission('contact', { form_name: 'Evaluación Gratuita', interest: submittedInterest, ...utm });
-
           // LinkedIn (si existe)
           try {
             (window as any)?.lintrk?.('track', { conversion_id: 'lead_generation' });
           } catch {}
+
+          // GA4 form_submit (solo con consentimiento analítico). El Lead de Meta y la conversión
+          // generate_lead se envían desde /gracias.html según el consentimiento.
+          trackFormSubmission('contact', { form_name: 'Evaluación Gratuita', interest: submittedInterest, ...utm });
 
           // Redirección a página de gracias
           setTimeout(() => {
@@ -441,6 +442,18 @@ const Contact = memo(() => {
                   <span className="inline-flex items-center gap-1">
                     <Target size={14} weight="duotone" className="text-blue-600" aria-hidden="true" /> Sin compromiso
                   </span>
+                </p>
+
+                {/* Información básica de privacidad (primera capa) — TEXTO TEMPORAL.
+                    TODO(ANTES DEL LANZAMIENTO): completar con responsable, finalidad, base jurídica,
+                    destinatarios y derechos cuando se confirmen los datos legales. Sin casilla obligatoria. */}
+                <p className="text-xs leading-relaxed text-gray-500 text-center" data-privacy-notice>
+                  Al enviar este formulario, tus datos se utilizarán únicamente para responder a tu solicitud.
+                  Consulta nuestra{' '}
+                  <a href="/privacidad" className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                    Política de Privacidad
+                  </a>
+                  .
                 </p>
               </form>
             </div>

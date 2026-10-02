@@ -20,11 +20,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Preconnect (perf) -->
-    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
-    <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
-
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_ES" />
@@ -45,28 +40,9 @@
     <meta name="twitter:image" content="https://maastac.com/og-image-1200x630.jpg" />
     <meta name="twitter:image:alt" content="MAASTAC — Software · Automatización · IA" />
 
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-YN77ENMF5B');
-    </script>
-
-    <!-- Meta Pixel -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1419230625849117');
-      fbq('track', 'PageView');
-    </script>
+    <!-- Google Analytics 4 (G-YN77ENMF5B) y Meta Pixel (1419230625849117) NO se cargan aquí:
+         se cargan desde src/utils/analytics.ts SOLO tras el consentimiento correspondiente
+         (ver src/consent/consent.ts). No añadir aquí scripts, noscript ni preconnect de trackers. -->
 
     <!-- JSON-LD: Organization (sin sameAs hasta tener perfiles sociales reales confirmados) -->
     <script type="application/ld+json">
@@ -93,12 +69,6 @@
   </head>
 
   <body>
-    <!-- Noscript del Pixel debe ir en el <body>, no en <head> -->
-    <noscript>
-      <img height="1" width="1" style="display:none"
-           src="https://www.facebook.com/tr?id=1419230625849117&ev=PageView&noscript=1" />
-    </noscript>
-
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

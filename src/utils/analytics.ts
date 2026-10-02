@@ -1,4 +1,6 @@
-// src/utils/analytics.ts — Versión Final Optimizada (con guardias anti-duplicado)
+// src/utils/analytics.ts — GA4 y Meta Pixel cargados SOLO con consentimiento (ver src/consent/consent.ts)
+import { CONSENT_EVENT, readConsent } from '../consent/consent';
+import type { ConsentChange, ConsentState } from '../consent/consent';
 
 // Tipos globales
 declare global {
@@ -42,77 +44,74 @@ const loadScriptAsync = (src: string, id?: string): Promise<void> => {
   });
 };
 
-// 📊 Google Analytics 4 (con guardias)
+// 📊 Google Analytics 4 — SOLO se llama con consentimiento analítico (ver initAnalytics).
 export const initGA4 = async (measurementId: string = ANALYTICS_CONFIG.GA_MEASUREMENT_ID) => {
   try {
-    if (!measurementId) return;
+    if (!measurementId || window.__ga4_loaded) return; // evita inicializaciones duplicadas
+    window.__ga4_loaded = true;
 
-    // Si ya hay gtag() o un script de GA en la página, NO duplicar
-    const alreadyHasGtag = typeof window.gtag === 'function';
-    const hasGaScript = !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]');
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () {
+      // gtag.js necesita el objeto `arguments` original (no un array).
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer!.push(arguments);
+    };
+    // Solo hay consentimiento analítico: almacenamiento publicitario denegado.
+    window.gtag('consent', 'default', {
+      analytics_storage: 'granted',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+    });
+    window.gtag('js', new Date());
+    // Privacidad: sin Google Signals ni personalización de anuncios. (anonymize_ip no aplica a GA4:
+    // GA4 no registra ni almacena direcciones IP completas.)
+    window.gtag('config', measurementId, {
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+    });
+    await loadScriptAsync(`https://www.googletagmanager.com/gtag/js?id=${measurementId}`, 'ga-script');
 
-    if (!alreadyHasGtag && !hasGaScript) {
-      await loadScriptAsync(`https://www.googletagmanager.com/gtag/js?id=${measurementId}`, 'ga-script');
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function () {
-        window.dataLayer!.push(arguments);
-      };
-      window.gtag('js', new Date());
-      window.gtag('config', measurementId, {
-        page_title: document.title,
-        page_location: window.location.href,
-        anonymize_ip: true,
-        allow_google_signals: false,
-        allow_ad_personalization_signals: false,
-        // Enhanced measurement básico
-        enhanced_measurement: {
-          scrolls: true,
-          outbound_clicks: true,
-          site_search: true,
-          video_engagement: true,
-          file_downloads: true,
-        },
-      });
-      window.__ga4_loaded = true;
-    } else {
-      // Asegura dataLayer y respeta config existente (evita doble PageView)
-      window.dataLayer = window.dataLayer || [];
-    }
-
-    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ GA4 listo (sin duplicados)');
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ GA4 cargado con consentimiento analítico');
   } catch (e) {
     console.error('❌ Error GA4:', e);
   }
 };
 
-// 📱 Facebook Pixel (con guardias)
+// 📱 Meta Pixel — SOLO se llama con consentimiento de marketing (ver initAnalytics).
+type FbqStub = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void;
+  queue: unknown[];
+  push: unknown;
+  loaded: boolean;
+  version: string;
+};
+
 export const initFacebookPixel = async (pixelId: string = ANALYTICS_CONFIG.FB_PIXEL_ID) => {
   try {
-    if (!pixelId) return;
-    const hasFbq = typeof window.fbq === 'function';
-    const hasFbScript = !!document.querySelector('script[src*="connect.facebook.net"]');
-    if (hasFbq || hasFbScript || window.__fb_loaded) {
-      if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('ℹ️ Pixel ya presente, no se duplica');
-      return;
-    }
-
-    const boot = document.createElement('script');
-    boot.innerHTML = `
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '${pixelId}');
-      fbq('track', 'PageView');
-    `;
-    document.head.appendChild(boot);
+    if (!pixelId || window.__fb_loaded || typeof window.fbq === 'function') return; // sin duplicados
     window.__fb_loaded = true;
 
-    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ Facebook Pixel listo (sin duplicados)');
+    // Equivalente tipado del snippet oficial de Meta: cola de llamadas hasta que carga fbevents.js.
+    const fbq = function () {
+      // eslint-disable-next-line prefer-rest-params
+      const args = arguments;
+      if (fbq.callMethod) fbq.callMethod(...Array.from(args));
+      else fbq.queue.push(args); // la cola conserva el objeto `arguments`, como el snippet oficial
+    } as FbqStub;
+    fbq.push = fbq;
+    fbq.loaded = true;
+    fbq.version = '2.0';
+    fbq.queue = [];
+    window.fbq = fbq;
+    (window as Window & { _fbq?: FbqStub })._fbq = fbq;
+
+    fbq('consent', 'grant');
+    fbq('init', pixelId);
+    fbq('track', 'PageView'); // único PageView de Meta por carga de página
+    await loadScriptAsync('https://connect.facebook.net/en_US/fbevents.js', 'fb-pixel-script');
+
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('✅ Meta Pixel cargado con consentimiento de marketing');
   } catch (e) {
     console.error('❌ Error Pixel:', e);
   }
@@ -136,7 +135,8 @@ export const initLinkedInInsight = async (partnerId: string = ANALYTICS_CONFIG.L
   }
 };
 
-// 🎯 Event tracking unificado
+// 🎯 Evento analítico (solo GA4; no hace nada sin consentimiento analítico porque gtag no existe).
+// Meta Pixel ya NO recibe estos eventos: solo recibe PageView, Lead (gracias.html) y ServiceCTA.
 export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
   if (typeof window === 'undefined') return;
   const eventData = {
@@ -146,34 +146,22 @@ export const trackEvent = (eventName: string, parameters?: Record<string, any>) 
     page_title: document.title,
   };
   window.gtag?.('event', eventName, eventData);
-  try { window.fbq?.('trackCustom', eventName, eventData); } catch {}
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Event:', eventName, eventData);
 };
 
-// 📝 Forms con debounce
-let __formTimeout: any;
-export const trackFormSubmission = (formType: string, additionalData?: Record<string, any>, debounceMs: number = 1000) => {
-  clearTimeout(__formTimeout);
-  __formTimeout = setTimeout(() => {
-    window.gtag?.('event', 'form_submit', {
-      form_type: formType,
-      page_location: window.location.href,
-      page_title: document.title,
-      value: formType === 'contact' ? 100 : formType === 'newsletter' ? 50 : 25,
-      ...additionalData,
-    });
-    const fbEvent = formType === 'contact' ? 'Lead' : 'Subscribe';
-    try {
-      window.fbq?.('track', fbEvent as any, {
-        content_name: `${formType} form`,
-        content_category: 'Lead Generation',
-        value: formType === 'contact' ? 100 : 50,
-        currency: 'USD',
-        ...additionalData,
-      });
-    } catch {}
-    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📝 Form submit:', formType, additionalData);
-  }, debounceMs);
+// 📝 Envío de formulario (solo GA4). Se registra de inmediato (antes había un debounce de 1000 ms,
+// mayor que los 400 ms de la redirección, que lo descartaba siempre). GA4 agrupa eventos antes de
+// enviarlos, así que la conversión de referencia es `generate_lead` en /gracias.html.
+// El Lead de Meta se envía una sola vez desde /gracias.html (si hay consentimiento de marketing).
+export const trackFormSubmission = (formType: string, additionalData?: Record<string, any>) => {
+  window.gtag?.('event', 'form_submit', {
+    form_type: formType,
+    page_location: window.location.href,
+    page_title: document.title,
+    value: formType === 'contact' ? 100 : formType === 'newsletter' ? 50 : 25,
+    ...additionalData,
+  });
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📝 Form submit:', formType, additionalData);
 };
 
 // 🖱️ Clicks (idle)
@@ -201,7 +189,6 @@ export const trackScrollDepth = () => {
           if (pct >= t && !seen.has(t)) {
             seen.add(t);
             trackEvent('scroll_depth', { scroll_depth: t, max_scroll_reached: maxScroll });
-            try { window.fbq?.('trackCustom', 'ScrollDepth', { scroll_depth: t }); } catch {}
             break;
           }
         }
@@ -247,8 +234,6 @@ export const measurePerformance = () => {
 export const trackConversion = (type: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, extra?: Record<string, any>) => {
   const v = value ?? (type === 'contact' ? 100 : type === 'download' ? 75 : 50);
   window.gtag?.('event', 'conversion', { conversion_type: type, value: v, currency: 'USD', ...extra });
-  const map = { lead: 'Lead', newsletter: 'Subscribe', download: 'CompleteRegistration', contact: 'Lead' } as const;
-  try { window.fbq?.('track', map[type] as any, { value: v, currency: 'USD', content_category: 'Lead Generation', ...extra }); } catch {}
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('💰 Conversion:', type, { value: v, ...extra });
 };
 
@@ -322,59 +307,43 @@ const getPageSection = (el: Element): string => {
   return section?.id || (section?.className?.toString().split(' ')[0] ?? 'unknown');
 };
 
-// 🚀 Init maestro (una sola vez)
+// 📈 Medición de comportamiento (solo GA4). Se activa una vez, cuando hay consentimiento analítico.
+let behaviorTrackingStarted = false;
+const startBehaviorTracking = () => {
+  if (behaviorTrackingStarted) return;
+  behaviorTrackingStarted = true;
+  measurePerformance();
+  trackScrollDepth();
+  setupAdvancedTracking();
+  window.addEventListener('error', (event: ErrorEvent) => trackError(event.error || event.message, 'global_error_handler'));
+  window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) =>
+    trackError(event.reason, 'unhandled_promise_rejection'),
+  );
+};
+
+/** Carga únicamente los trackers autorizados por la preferencia indicada. */
+const applyConsent = (consent: ConsentState | null) => {
+  if (!consent) return; // sin decisión: no se carga nada
+  if (consent.analytics) {
+    void initGA4();
+    startBehaviorTracking();
+  }
+  if (consent.marketing) {
+    void initFacebookPixel();
+  }
+  // LinkedIn Insight sigue desactivado (sin ID). Si se activa, debe ir bajo consentimiento de marketing.
+};
+
+// 🚀 Init maestro (una sola vez): respeta el consentimiento guardado y escucha cambios posteriores.
+// Al conceder un permiso se carga en el momento; al retirarlo, consent.ts borra cookies y recarga.
 export const initAnalytics = () => {
   if (window.__analytics_initialized) return;
   window.__analytics_initialized = true;
 
-  const initializeTracking = async () => {
-    try {
-      await Promise.all([
-        initGA4(),
-        initFacebookPixel(),
-        // initLinkedInInsight() // Activar cuando tengas LinkedIn
-      ]);
+  applyConsent(readConsent());
+  window.addEventListener(CONSENT_EVENT, (e) => applyConsent((e as CustomEvent<ConsentChange>).detail.current));
 
-      measurePerformance();
-      const cleanupScroll = trackScrollDepth();
-      setupAdvancedTracking();
-
-      // Error handlers globales (una vez)
-      const onErr = (event: ErrorEvent) => trackError(event.error || event.message, 'global_error_handler');
-      const onRej = (event: PromiseRejectionEvent) => trackError(event.reason, 'unhandled_promise_rejection');
-      window.addEventListener('error', onErr);
-      window.addEventListener('unhandledrejection', onRej);
-
-      if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('🎯 Analytics inicializado (one-shot)');
-
-      // Opcional: retorna cleanup (si hiciera falta desmontar)
-      return () => {
-        cleanupScroll?.();
-        window.removeEventListener('error', onErr);
-        window.removeEventListener('unhandledrejection', onRej);
-      };
-    } catch (e) {
-      console.error('❌ Error init analytics:', e);
-    }
-  };
-
-  // Inicialización por interacción + fallback
-  const handleUserInteraction = () => {
-    initializeTracking();
-    window.removeEventListener('scroll', handleUserInteraction);
-    window.removeEventListener('click', handleUserInteraction);
-    window.removeEventListener('keydown', handleUserInteraction);
-    window.removeEventListener('touchstart', handleUserInteraction);
-  };
-
-  window.addEventListener('scroll', handleUserInteraction, { passive: true });
-  window.addEventListener('click', handleUserInteraction, { passive: true });
-  window.addEventListener('keydown', handleUserInteraction, { passive: true });
-  window.addEventListener('touchstart', handleUserInteraction, { passive: true });
-
-  setTimeout(() => initializeTracking(), 3000);
-
-  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Analytics listo para iniciar');
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Analytics: carga sujeta a consentimiento');
 };
 
 // Debug helper

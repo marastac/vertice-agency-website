@@ -1,6 +1,7 @@
 // src/components/Footer.tsx
 import { memo, useCallback } from 'react';
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
+import { openCookieSettings } from '../consent/consent';
 
 // Mejora visual: íconos Phosphor consistentes (reemplazan emojis)
 import {
@@ -16,6 +17,8 @@ const Footer = memo(() => {
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: 'smooth' });
+    // Fuera de la home (páginas legales, 404) la sección no existe: navegar a /#seccion.
+    else window.location.href = `/#${sectionId}`;
   }, []);
 
   const currentYear = new Date().getFullYear();
@@ -225,30 +228,37 @@ const Footer = memo(() => {
               </div>
 
               <div className="flex flex-wrap gap-6 text-sm">
-                {['Política de Privacidad','Términos de Servicio','Cookies','Aviso Legal'].map((txt) => (
+                {/* TODO(ANTES DEL LANZAMIENTO): las páginas legales son borradores sin datos del titular. */}
+                {[
+                  { txt: 'Política de Privacidad', href: '/privacidad' },
+                  { txt: 'Términos de Servicio', href: '/terminos' },
+                  { txt: 'Cookies', href: '/cookies' },
+                  { txt: 'Aviso Legal', href: '/aviso-legal' },
+                ].map(({ txt, href }) => (
                   <a
                     key={txt}
-                    // TODO(ANTES DEL LANZAMIENTO): enlaces legales pendientes (Privacidad, Términos, Cookies,
-                    // Aviso Legal) + consentimiento de cookies para España/UE. No inventar textos legales.
-                    href="#"
+                    href={href}
                     className="text-blue-200 hover:text-white transition-colors duration-300"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     data-cta={`footer_policy_${txt.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
                       (window as any)?.gtag?.('event', 'select_content', {
                         content_type: 'policy',
                         item_id: txt.toLowerCase().replace(/[^a-z0-9]+/g,'_'),
                         section: 'footer',
                       });
-                      // Cuando tengas URLs reales, reemplaza '#' y quita este return
-                      return;
                     }}
                   >
                     {txt}
                   </a>
                 ))}
+                <button
+                  type="button"
+                  onClick={openCookieSettings}
+                  className="text-blue-200 hover:text-white transition-colors duration-300"
+                  data-cta="footer_cookie_settings"
+                >
+                  Configurar cookies
+                </button>
               </div>
 
               <div className="text-blue-200 text-sm inline-flex items-center gap-2 whitespace-nowrap">
