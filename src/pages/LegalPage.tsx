@@ -1,9 +1,25 @@
 // src/pages/LegalPage.tsx — Plantilla de páginas legales (/privacidad, /terminos, /cookies, /aviso-legal).
-// Ver legalContent.ts: son BORRADORES sin datos legales inventados.
+// Contenido en legalContent.ts. Mientras `draft` sea true: noindex + aviso de borrador visible.
 import { openCookieSettings } from '../consent/consent';
 import { COOKIE_INVENTORY, LEGAL_PAGES } from './legalContent';
-import type { LegalPageDef } from './legalContent';
+import type { Block, Inline, LegalPageDef } from './legalContent';
 import { usePageMeta } from './usePageMeta';
+
+function InlineText({ content }: { content: Inline[] }) {
+  return (
+    <>
+      {content.map((part, i) =>
+        typeof part === 'string' ? (
+          <span key={i}>{part}</span>
+        ) : (
+          <a key={i} href={part.href} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+            {part.label}
+          </a>
+        ),
+      )}
+    </>
+  );
+}
 
 function CookieTable() {
   return (
@@ -36,8 +52,42 @@ function CookieTable() {
   );
 }
 
+function BlockView({ block }: { block: Block }) {
+  switch (block.kind) {
+    case 'p':
+      return (
+        <p className="text-gray-700 leading-relaxed">
+          <InlineText content={block.content} />
+        </p>
+      );
+    case 'ul':
+      return (
+        <ul className="list-disc pl-5 space-y-2 text-gray-700 leading-relaxed">
+          {block.items.map((item, i) => (
+            <li key={i}>
+              <InlineText content={item} />
+            </li>
+          ))}
+        </ul>
+      );
+    case 'cookie-table':
+      return <CookieTable />;
+    case 'cookie-settings-button':
+      return (
+        <button
+          type="button"
+          onClick={openCookieSettings}
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 font-semibold text-white hover:shadow-lg"
+        >
+          Configurar cookies
+        </button>
+      );
+  }
+}
+
 export default function LegalPage({ page }: { page: LegalPageDef }) {
   usePageMeta(`${page.title} | MAASTAC`, page.draft ? 'noindex,follow' : undefined);
+  const pendingCount = page.sections.filter((s) => s.pending).length;
 
   return (
     <main className="bg-white pt-28 pb-20 md:pt-36">
@@ -47,45 +97,53 @@ export default function LegalPage({ page }: { page: LegalPageDef }) {
         </h1>
 
         {page.draft && (
-          <div role="note" className="mb-8 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-900">
+          <div role="note" data-legal-draft className="mb-8 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-900">
             <p className="font-semibold">Documento en preparación</p>
             <p className="text-sm">
-              Este texto todavía no es definitivo. Estamos completando la información legal de esta página.
+              Este texto todavía no es definitivo.
+              {pendingCount > 0 &&
+                ` Hay ${pendingCount} ${pendingCount === 1 ? 'apartado pendiente' : 'apartados pendientes'} de completar antes del lanzamiento comercial.`}
             </p>
           </div>
         )}
 
-        {page.kind === 'cookies' && (
-          <section className="mb-10 space-y-4 text-gray-700 leading-relaxed">
-            <p>
-              Esta web solo usa almacenamiento estrictamente necesario de forma predeterminada. Google Analytics
-              (analítica) y Meta Pixel (marketing) únicamente se cargan si los aceptas, y puedes cambiar tu elección en
-              cualquier momento.
-            </p>
-            <button
-              type="button"
-              onClick={openCookieSettings}
-              className="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 font-semibold text-white hover:shadow-lg"
-            >
-              Configurar cookies
-            </button>
-            <h2 className="pt-4 text-xl font-bold text-gray-900">Cookies y almacenamiento utilizados</h2>
-            <CookieTable />
-          </section>
-        )}
+        <p className="mb-8 text-lg text-gray-700 leading-relaxed">
+          <InlineText content={page.intro} />
+        </p>
 
-        <section aria-labelledby="pending-title" className="rounded-xl border border-dashed border-gray-300 p-5">
-          <h2 id="pending-title" className="text-lg font-bold text-gray-900 mb-3">
-            Apartados pendientes de completar
-          </h2>
-          <ul className="list-disc pl-5 space-y-1 text-gray-600">
-            {page.pendingSections.map((s) => (
-              <li key={s}>{s}</li>
+        <nav aria-label="Contenido de la página" className="mb-10 rounded-xl bg-gray-50 p-5">
+          <p className="mb-2 text-sm font-semibold text-gray-900">Contenido</p>
+          <ol className="grid gap-1 text-sm sm:grid-cols-2">
+            {page.sections.map((s) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`} className="text-blue-700 hover:underline">
+                  {s.heading}
+                </a>
+              </li>
             ))}
-          </ul>
-        </section>
+          </ol>
+        </nav>
 
-        <nav aria-label="Otras páginas legales" className="mt-10 flex flex-wrap gap-4 text-sm">
+        <div className="space-y-10">
+          {page.sections.map((section) => (
+            <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="scroll-mt-28 space-y-4">
+              <h2 id={`${section.id}-title`} className="text-xl md:text-2xl font-bold text-gray-900">
+                {section.heading}
+              </h2>
+              {section.blocks.map((block, i) => (
+                <BlockView key={i} block={block} />
+              ))}
+              {section.pending && (
+                <p role="note" data-legal-pending className="rounded-lg border border-dashed border-amber-400 bg-amber-50/60 px-4 py-3 text-sm text-amber-900">
+                  <span className="font-semibold">Pendiente: </span>
+                  {section.pending}
+                </p>
+              )}
+            </section>
+          ))}
+        </div>
+
+        <nav aria-label="Otras páginas legales" className="mt-12 flex flex-wrap gap-4 border-t border-gray-100 pt-6 text-sm">
           {LEGAL_PAGES.filter((p) => p.path !== page.path).map((p) => (
             <a key={p.path} href={p.path} className="text-blue-700 underline underline-offset-2 hover:text-blue-900">
               {p.title}

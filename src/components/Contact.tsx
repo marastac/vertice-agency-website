@@ -444,12 +444,11 @@ const Contact = memo(() => {
                   </span>
                 </p>
 
-                {/* Información básica de privacidad (primera capa) — TEXTO TEMPORAL.
-                    TODO(ANTES DEL LANZAMIENTO): completar con responsable, finalidad, base jurídica,
-                    destinatarios y derechos cuando se confirmen los datos legales. Sin casilla obligatoria. */}
+                {/* Información básica de privacidad (primera capa). Sin casilla obligatoria, sin consentimiento
+                    de marketing y sin depender de las cookies. La segunda capa es /privacidad.
+                    TODO(ANTES DEL LANZAMIENTO): revisar cuando /privacidad deje de ser borrador. */}
                 <p className="text-xs leading-relaxed text-gray-500 text-center" data-privacy-notice>
-                  Al enviar este formulario, tus datos se utilizarán únicamente para responder a tu solicitud.
-                  Consulta nuestra{' '}
+                  Usaremos los datos que nos envíes para atender y responder a tu solicitud. Consulta nuestra{' '}
                   <a href="/privacidad" className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
                     Política de Privacidad
                   </a>
