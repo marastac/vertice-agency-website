@@ -54,9 +54,18 @@ const Footer = memo(() => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
               {/* Logo y descripción */}
               <div className="lg:col-span-2">
-                <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">
-                  Vértice Agency
-                </div>
+                {/* Logo MAASTAC (blanco, sobre el fondo oscuro del footer). Proporción real 5:1 (800×160 / 1476×296). */}
+                <img
+                  src="/brand/maastac-logo-horizontal-white-800.png"
+                  srcSet="/brand/maastac-logo-horizontal-white-800.png 800w, /brand/maastac-logo-horizontal-white.png 1476w"
+                  sizes="(min-width: 768px) 240px, 200px"
+                  alt="MAASTAC"
+                  width={800}
+                  height={160}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-10 md:h-12 w-auto max-w-full mb-6 select-none"
+                />
                 <p className="text-blue-100 mb-6 max-w-md leading-relaxed">
                   Automatización, desarrollo web e integraciones para empresas y negocios digitales. Construimos sistemas
                   que reducen el trabajo manual y ayudan a captar y gestionar clientes.
@@ -212,13 +221,15 @@ const Footer = memo(() => {
           <div className="container">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-blue-200 text-sm">
-                © {currentYear} Vértice Agency. Todos los derechos reservados.
+                © {currentYear} MAASTAC. Todos los derechos reservados.
               </div>
 
               <div className="flex flex-wrap gap-6 text-sm">
                 {['Política de Privacidad','Términos de Servicio','Cookies','Aviso Legal'].map((txt) => (
                   <a
                     key={txt}
+                    // TODO(ANTES DEL LANZAMIENTO): enlaces legales pendientes (Privacidad, Términos, Cookies,
+                    // Aviso Legal) + consentimiento de cookies para España/UE. No inventar textos legales.
                     href="#"
                     className="text-blue-200 hover:text-white transition-colors duration-300"
                     target="_blank"
@@ -244,7 +255,7 @@ const Footer = memo(() => {
                 Hecho con
                 {/* Mejora visual: corazón Phosphor en lugar de emoji */}
                 <Heart size={16} weight="duotone" className="text-pink-300" aria-hidden="true" />
-                por Vértice
+                por MAASTAC
               </div>
             </div>
           </div>

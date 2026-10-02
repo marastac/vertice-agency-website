@@ -141,7 +141,7 @@ const Contact = memo(() => {
             interest: formData.interest,
             message: formData.message,
             form_name: 'Evaluación Gratuita',
-            source: 'Vértice Agency Website',
+            source: 'MAASTAC Website',
             timestamp: new Date().toISOString(),
             page_url: window.location.href,
             user_agent: navigator.userAgent,
@@ -501,7 +501,7 @@ const Contact = memo(() => {
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duración-300"
                     onClick={handleEmailClick}
                     data-cta="contact_email"
-                    aria-label="Abrir correo para escribir a Vértice Agency"
+                    aria-label="Abrir correo para escribir a MAASTAC"
                   >
                     <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                       <EnvelopeSimple size={22} weight="duotone" aria-hidden="true" />

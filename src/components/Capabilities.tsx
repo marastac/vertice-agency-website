@@ -45,7 +45,7 @@ const PROJECTS: Project[] = [
     Icon: PlugsConnected,
   },
   {
-    title: 'Web de Vértice',
+    title: 'Web de MAASTAC',
     tag: 'Desarrollo web',
     description:
       'Esta misma web: formulario de contacto conectado y medición de conversiones con GA4 y Meta Pixel.',

@@ -1,21 +1,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap location - URL FINAL
-Sitemap: https://verticeagency.com/sitemap.xml
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# Disallow admin and build files
-Disallow: /admin/
-Disallow: /private/
-Disallow: /_next/
-Disallow: /assets/
-Disallow: /*.json$
-
-# Crawl-delay for politeness
-Crawl-delay: 1
+Sitemap: https://maastac.com/sitemap.xml

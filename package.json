@@ -1,10 +1,10 @@
 {
-  "name": "vertice-agency",
+  "name": "maastac-web",
   "version": "1.0.0",
   "type": "module",
-  "description": "Vértice Agency - Marketing Digital con IA y Automatización",
-  "homepage": "https://verticeagency.com",
-  "author": "Vértice Agency Team",
+  "description": "MAASTAC - Web, automatización e integraciones para negocios",
+  "homepage": "https://maastac.com",
+  "author": "MAASTAC",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

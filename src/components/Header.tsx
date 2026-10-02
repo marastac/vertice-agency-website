@@ -2,7 +2,9 @@
 import { useState, useEffect, memo, useCallback, useRef } from 'react';
 import { Rocket } from 'phosphor-react';
 
-const LOGO_SRC = '/vertice-logo.png'; // coloca tu archivo en /public
+// Logo MAASTAC (símbolo + palabra en blanco), pensado para fondos oscuros. Proporción real 5:1 (800×160 / 1476×296).
+const LOGO_SRC = '/brand/maastac-logo-horizontal-white-800.png';
+const LOGO_SRC_2X = '/brand/maastac-logo-horizontal-white.png';
 
 const Header = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -102,29 +104,24 @@ const Header = memo(() => {
   ];
 
   // === Visual classes ===
-  // Con el menú móvil abierto se usa el mismo fondo sólido que al hacer scroll,
-  // para que los enlaces no se superpongan con el Hero.
+  // El logo MAASTAC es blanco y está pensado para fondos oscuros, así que el header siempre lleva
+  // el fondo oscuro translúcido (algo más transparente arriba del Hero) y los enlaces en claro.
+  // Con scroll o con el menú móvil abierto se usa la versión más sólida.
   const solid = isScrolled || isMobileMenuOpen;
 
   const headerBg = solid
     ? 'bg-gradient-to-r from-gray-900/90 to-blue-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-white/10 shadow-xl'
-    : 'bg-transparent';
+    : 'bg-gradient-to-r from-gray-900/60 to-blue-900/60 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-white/10';
 
-  const linkBase = isScrolled
-    ? 'text-white/90 hover:text-white'
-    : 'text-gray-700 hover:text-blue-600';
+  const linkBase = 'text-white/90 hover:text-white';
 
-  const underlineClass = isScrolled
-    ? 'from-white to-white'
-    : 'from-blue-600 to-purple-600';
+  const underlineClass = 'from-white to-white';
 
-  const burgerBar = solid ? 'bg-white' : 'bg-gray-600';
+  const burgerBar = 'bg-white';
 
-  const mobileLink = solid
-    ? 'text-white/90 hover:text-white hover:bg-white/10'
-    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50';
+  const mobileLink = 'text-white/90 hover:text-white hover:bg-white/10';
 
-  const mobileSectionBorder = solid ? 'border-white/10' : 'border-gray-200';
+  const mobileSectionBorder = 'border-white/10';
 
   return (
     <header
@@ -134,34 +131,25 @@ const Header = memo(() => {
     >
       <div className="container">
         <div className="flex items-center justify-between py-4">
-          {/* Logo + Marca */}
+          {/* Logo (incluye la palabra MAASTAC) */}
           <button
             type="button"
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center cursor-pointer group shrink-0"
             onClick={() => scrollToSection('home', 'logo')}
-            aria-label="Ir al inicio"
+            aria-label="MAASTAC — ir al inicio"
             data-cta="logo_home"
           >
-            <span
-              className={`relative inline-flex items-center justify-center rounded-xl ${
-                solid ? 'shadow-md' : ''
-              }`}
-            >
-              <img
-                src={LOGO_SRC}
-                alt="Logotipo de Vértice Agency"
-                width={40}
-                height={40}
-                className="h-10 w-10 select-none will-change-transform transition-transform duration-300 group-hover:scale-105 group-active:scale-95"
-                loading="eager"
-                decoding="async"
-              />
-            </span>
-            <div
-              className={`text-2xl md:text-3xl font-black whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent`}
-            >
-              Vértice Agency
-            </div>
+            <img
+              src={LOGO_SRC}
+              srcSet={`${LOGO_SRC} 800w, ${LOGO_SRC_2X} 1476w`}
+              sizes="(min-width: 768px) 200px, 160px"
+              alt="MAASTAC"
+              width={800}
+              height={160}
+              className="h-8 md:h-10 w-auto select-none transition-transform duration-300 group-hover:scale-105 group-active:scale-95"
+              loading="eager"
+              decoding="async"
+            />
           </button>
 
           {/* Navigation - Desktop */}

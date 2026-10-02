@@ -1,4 +1,4 @@
-// src/components/LeadAI.tsx — Producto propio de Vértice
+// src/components/LeadAI.tsx — Producto propio de MAASTAC
 // Solo describe capacidades confirmadas en el producto (vertice-ai-suite/lead-ai).
 // No añadir funciones que no existan (p. ej. widget embebible o sincronización automática con CRM).
 import { memo, useCallback } from 'react';
@@ -76,7 +76,7 @@ const LeadAI = memo(() => {
           <div>
             <div className="arc-pill mb-6 inline-flex items-center gap-3 border-2 border-white/20 bg-white/10 px-6 py-3 text-base font-semibold text-blue-100">
               <Sparkle size={20} weight="duotone" className="text-blue-200" aria-hidden="true" />
-              Producto propio de Vértice
+              Producto propio de MAASTAC
             </div>
             <h2 id="lead-ai-heading" className="text-4xl md:text-5xl font-black mb-6 leading-tight">
               Lead AI: capta, califica y organiza{' '}
@@ -85,9 +85,9 @@ const LeadAI = memo(() => {
               </span>
             </h2>
             <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed">
-              Lead AI es la solución que desarrollamos en Vértice para la captación y calificación inicial de clientes
+              Lead AI es la solución que desarrollamos en MAASTAC para la captación y calificación inicial de clientes
               potenciales. Combina formularios con puntuación, un asistente de chat con IA y un panel de gestión, y envía
-              tus leads a HubSpot cuando lo necesitas. Puede formar parte de una implementación de Vértice o puedes
+              tus leads a HubSpot cuando lo necesitas. Puede formar parte de una implementación de MAASTAC o puedes
               solicitar una demo.
             </p>
 
