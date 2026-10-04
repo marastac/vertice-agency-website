@@ -197,8 +197,10 @@ const COOKIES: LegalPageDef = {
     {
       id: 'inventario',
       heading: '2. Cookies y almacenamiento utilizados',
-      blocks: [{ kind: 'cookie-table' }],
-      pending: `${PENDING_LAUNCH} Las duraciones de las cookies de Google y Meta están pendientes de verificar.`,
+      blocks: [
+        { kind: 'cookie-table' },
+        p('Las cookies de Google y de Meta solo se crean si aceptas la categoría correspondiente. Las duraciones indicadas son las máximas: se borran antes si retiras tu consentimiento o eliminas las cookies de tu navegador.'),
+      ],
     },
     {
       id: 'gestion',
@@ -385,7 +387,10 @@ export interface CookieRow {
   duration: string;
 }
 
-/** Duraciones de Google y Meta pendientes de verificar: no se publican valores no comprobados. */
+/**
+ * Duraciones verificadas en navegador (build de producción, Edge/Chromium) y contrastadas con la
+ * documentación de Google (_ga / _ga_<ID>: 2 años), Meta (_fbc: 90 días) y Chrome (límite de 400 días).
+ */
 export const COOKIE_INVENTORY: CookieRow[] = [
   {
     name: 'maastac_consent',
@@ -401,7 +406,7 @@ export const COOKIE_INVENTORY: CookieRow[] = [
     provider: 'Google Analytics 4',
     category: 'Analítica',
     purpose: 'Distinguir visitantes para elaborar estadísticas de uso.',
-    duration: 'Pendiente de verificar',
+    duration: 'Hasta 2 años según Google; en Chrome y Edge, 400 días (máximo que permiten estos navegadores). Se renueva en cada visita. Otros navegadores pueden aplicar límites más cortos.',
   },
   {
     name: '_ga_YN77ENMF5B',
@@ -409,7 +414,7 @@ export const COOKIE_INVENTORY: CookieRow[] = [
     provider: 'Google Analytics 4',
     category: 'Analítica',
     purpose: 'Mantener el estado de la sesión de Google Analytics.',
-    duration: 'Pendiente de verificar',
+    duration: 'Hasta 2 años según Google; en Chrome y Edge, 400 días (máximo que permiten estos navegadores). Se renueva en cada visita. Otros navegadores pueden aplicar límites más cortos.',
   },
   {
     name: '_fbp',
@@ -417,14 +422,14 @@ export const COOKIE_INVENTORY: CookieRow[] = [
     provider: 'Meta Pixel',
     category: 'Marketing',
     purpose: 'Identificar el navegador para medir campañas de Meta.',
-    duration: 'Pendiente de verificar',
+    duration: '90 días. Se renueva en cada visita.',
   },
   {
     name: '_fbc',
     type: 'Cookie',
     provider: 'Meta Pixel',
     category: 'Marketing',
-    purpose: 'Guardar el identificador de clic cuando se llega a la web desde un enlace de Meta con el parámetro fbclid (por ejemplo, un anuncio). Solo se crea en ese caso.',
-    duration: 'Pendiente de verificar',
+    purpose: 'Guardar el identificador de clic cuando llegas a la web desde un enlace de Meta con el parámetro fbclid (por ejemplo, un anuncio). Solo se crea en ese caso y si has aceptado Marketing.',
+    duration: '90 días.',
   },
 ];

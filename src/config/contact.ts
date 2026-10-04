@@ -14,9 +14,8 @@ export const WHATSAPP_DISPLAY = '+51 940 399 159';
 export const CONTACT_EMAIL = 'hola@maastac.com';
 
 /**
- * Correo PREVISTO para consultas y derechos de privacidad (se muestra en /privacidad).
- * TODO(ANTES DEL LANZAMIENTO): crear y verificar el alias/reenvío de privacidad@maastac.com
- * (todavía no está configurado). No publicar nunca la dirección de destino del reenvío.
+ * Correo para consultas y derechos de privacidad (se muestra en /privacidad y /aviso-legal).
+ * Alias/reenvío configurado en Namecheap y comprobado. No publicar nunca la dirección de destino del reenvío.
  */
 export const PRIVACY_EMAIL = 'privacidad@maastac.com';
 
