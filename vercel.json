@@ -5,9 +5,18 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(privacidad|cookies|terminos|aviso-legal)", "destination": "/index.html" },
+    { "source": "/(privacidad|cookies|terminos|aviso-legal)/", "destination": "/index.html" }
   ],
   "headers": [
+    {
+      "source": "/(privacidad|cookies|terminos|aviso-legal)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
+    },
+    {
+      "source": "/(privacidad|cookies|terminos|aviso-legal)/",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, follow" }]
+    },
     {
       "source": "/sitemap.xml",
       "headers": [
