@@ -3,7 +3,10 @@
 // Contact.tsx la guarda SOLO cuando Formspree responde OK. /gracias.html la lee y la BORRA antes de
 // enviar generate_lead (GA4) y Lead (Meta), así que un refresh, Atrás/Adelante, una visita directa o la
 // URL copiada en otra pestaña no generan conversiones. sessionStorage es propio de cada pestaña.
+// Solo se guarda si hay consentimiento de Analíticas o de Marketing: sin consentimiento no hay
+// conversión que medir y no se almacena nada (ver inventario en src/pages/legalContent.ts).
 // ⚠️ public/gracias.html repite la clave, el formato y el TTL: mantenerlos sincronizados.
+import { readConsent } from '../consent/consent';
 
 export const LEAD_PENDING_KEY = 'maastac_lead_pending';
 export const LEAD_PENDING_TTL_MS = 30 * 60 * 1000;
@@ -22,8 +25,13 @@ const newId = (): string => {
   }
 };
 
-/** Marca un envío correcto. Si sessionStorage no está disponible no se registra conversión (nunca se duplica). */
+/**
+ * Marca un envío correcto, solo con consentimiento de Analíticas o Marketing.
+ * Si sessionStorage no está disponible no se registra conversión (nunca se duplica).
+ */
 export function markLeadPending(src: LeadPending['src']): void {
+  const consent = readConsent();
+  if (!consent?.analytics && !consent?.marketing) return;
   try {
     const value: LeadPending = { id: newId(), src, ts: Date.now() };
     window.sessionStorage.setItem(LEAD_PENDING_KEY, JSON.stringify(value));

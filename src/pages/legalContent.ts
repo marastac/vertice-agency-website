@@ -382,7 +382,7 @@ export interface CookieRow {
   name: string;
   type: string;
   provider: string;
-  category: 'Necesaria' | 'Analítica' | 'Marketing';
+  category: 'Necesaria' | 'Analítica' | 'Marketing' | 'Analítica / Marketing';
   purpose: string;
   duration: string;
 }
@@ -431,5 +431,13 @@ export const COOKIE_INVENTORY: CookieRow[] = [
     category: 'Marketing',
     purpose: 'Guardar el identificador de clic cuando llegas a la web desde un enlace de Meta con el parámetro fbclid (por ejemplo, un anuncio). Solo se crea en ese caso y si has aceptado Marketing.',
     duration: '90 días.',
+  },
+  {
+    name: 'maastac_lead_pending',
+    type: 'Almacenamiento de sesión (sessionStorage)',
+    provider: 'MAASTAC (propia)',
+    category: 'Analítica / Marketing',
+    purpose: 'Solo si has aceptado Analíticas o Marketing y envías el formulario con éxito: permite registrar una sola vez la conversión de tu solicitud, sin volver a contarla si recargas o vuelves a la página de agradecimiento. Contiene un identificador aleatorio y la hora del envío.',
+    duration: 'Se borra al abrir la página de agradecimiento o al cerrar la pestaña; deja de ser válido a los 30 minutos.',
   },
 ];
