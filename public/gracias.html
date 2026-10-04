@@ -59,6 +59,24 @@
       }
       const consent = readConsent();
 
+      // ── Conversión de un solo uso: misma clave, formato y TTL que src/utils/leadConversion.ts ──
+      // Contact.tsx guarda la marca solo tras un envío correcto a Formspree. Se BORRA aquí antes de enviar
+      // nada: refresh, Atrás/Adelante, visita directa o URL copiada en otra pestaña => sin conversión.
+      function consumeLead(expectedSrc) {
+        let raw = null;
+        try {
+          raw = sessionStorage.getItem('maastac_lead_pending');
+          sessionStorage.removeItem('maastac_lead_pending');
+        } catch (e) { return null; }
+        try {
+          const p = JSON.parse(raw || 'null');
+          const age = p && typeof p.ts === 'number' ? Date.now() - p.ts : -1;
+          if (p && typeof p.id === 'string' && p.src === expectedSrc && age >= 0 && age < 30 * 60 * 1000) return p;
+        } catch (e) {}
+        return null;
+      }
+      const lead = consumeLead(src);
+
       // GA4: SOLO con consentimiento analítico
       if (consent && consent.analytics === true) {
         try {
@@ -72,7 +90,7 @@
             magnet:    { event: 'download', value: 75 },
             contact:   { event: 'generate_lead', value: 100 }
           };
-          if (map[src]) gtag('event', map[src].event, { value: map[src].value, currency: 'USD' });
+          if (lead && map[src]) gtag('event', map[src].event, { value: map[src].value, currency: 'USD' });
           loadScript('https://www.googletagmanager.com/gtag/js?id=G-YN77ENMF5B');
         } catch (e) {}
       }
@@ -90,7 +108,7 @@
             magnet:    { event: 'CompleteRegistration', value: 75 },
             contact:   { event: 'Lead', value: 100 }
           };
-          if (pmap[src]) fbq('track', pmap[src].event, { value: pmap[src].value, currency: 'USD' });
+          if (lead && pmap[src]) fbq('track', pmap[src].event, { value: pmap[src].value, currency: 'USD' }, { eventID: lead.id });
           loadScript('https://connect.facebook.net/en_US/fbevents.js');
         } catch (e) {}
       }

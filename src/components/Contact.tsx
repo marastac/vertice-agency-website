@@ -2,6 +2,7 @@
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
 import { trackEvent, trackFormSubmission } from '../utils/analytics';
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
+import { markLeadPending } from '../utils/leadConversion';
 import { INTEREST_EVENT, INTEREST_OPTIONS } from '../utils/contactIntent';
 import type { Interest } from '../utils/contactIntent';
 import {
@@ -150,6 +151,8 @@ const Contact = memo(() => {
         });
 
         if (response.ok) {
+          // Marca de un solo uso: /gracias.html solo envía generate_lead / Lead si la encuentra.
+          markLeadPending('contact');
           setSubmitStatus('success');
           const submittedInterest = formData.interest;
           setFormData({ name: '', email: '', phone: '', company: '', interest: '', message: '', website: '' });
