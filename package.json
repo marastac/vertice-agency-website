@@ -5,7 +5,7 @@
   "description": "MAASTAC - Web, automatización e integraciones para negocios",
   "homepage": "https://maastac.com",
   "author": "MAASTAC",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
