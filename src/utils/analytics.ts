@@ -158,7 +158,7 @@ export const trackFormSubmission = (formType: string, additionalData?: Record<st
     form_type: formType,
     page_location: window.location.href,
     page_title: document.title,
-    value: formType === 'contact' ? 100 : formType === 'newsletter' ? 50 : 25,
+    // Sin valor monetario: no asignamos valores ficticios a un formulario hasta tener datos comerciales reales.
     ...additionalData,
   });
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📝 Form submit:', formType, additionalData);
@@ -232,8 +232,9 @@ export const measurePerformance = () => {
 
 // 💰 Conversiones
 export const trackConversion = (type: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, extra?: Record<string, any>) => {
-  const v = value ?? (type === 'contact' ? 100 : type === 'download' ? 75 : 50);
-  window.gtag?.('event', 'conversion', { conversion_type: type, value: v, currency: 'USD', ...extra });
+  // 'contact' no tiene valor por defecto (sin valores ficticios); solo se envía value/currency si hay valor.
+  const v = value ?? (type === 'contact' ? undefined : type === 'download' ? 75 : 50);
+  window.gtag?.('event', 'conversion', { conversion_type: type, ...(v !== undefined ? { value: v, currency: 'USD' } : {}), ...extra });
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('💰 Conversion:', type, { value: v, ...extra });
 };
 
