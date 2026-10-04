@@ -492,8 +492,7 @@ const Contact = memo(() => {
                   ¿Prefieres hablar directamente?
                 </h3>
                 <div className="space-y-4">
-                  {/* TODO(ANTES DEL DEPLOY DE LANZAMIENTO): WhatsApp y email son provisionales.
-                      Se cambian en un solo lugar: src/config/contact.ts */}
+                  {/* Datos de contacto centralizados en src/config/contact.ts */}
                   <a
                     href={whatsappUrl('Hola, quiero solicitar una evaluación gratuita')}
                     className="flex items-center gap-4 hover:bg-white/10 rounded-xl p-3 transition-all duration-300"

@@ -150,7 +150,7 @@ const Footer = memo(() => {
                     </div>
                     <div>
                       <div className="font-semibold text-white">Email</div>
-                      {/* TODO(ANTES DEL DEPLOY DE LANZAMIENTO): email y WhatsApp provisionales → src/config/contact.ts */}
+                      {/* Datos de contacto centralizados en src/config/contact.ts */}
                       <a
                         href={`mailto:${CONTACT_EMAIL}`}
                         className="hover:text-white transition-colors break-words"
