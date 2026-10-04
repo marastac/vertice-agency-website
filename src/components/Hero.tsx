@@ -1,5 +1,5 @@
 // src/components/Hero.tsx
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Robot, Browsers, PlugsConnected, Lightning, CheckCircle, ArrowRight } from 'phosphor-react';
 
 // Beneficio primero (título) y la oferta que lo resuelve después (etiqueta).
@@ -10,8 +10,29 @@ const PILLARS = [
   { icon: <PlugsConnected size={32} weight="duotone" color="#fff" />, title: 'Herramientas conectadas', label: 'Sistemas & Integraciones', color: 'from-purple-500 to-purple-600' },
 ];
 
+// Fondo del hero: póster (siempre) + vídeo 720p solo en pantallas ≥768 px, sin "reducir movimiento"
+// y sin ahorro de datos. En móvil no se descarga ningún vídeo. Base oscura #071123 + velo ~40 %:
+// el texto blanco mantiene contraste suficiente aunque el vídeo no cargue o falle.
+const VIDEO_QUERY = '(min-width: 768px) and (prefers-reduced-motion: no-preference)';
+const MEDIA_CLASSES = 'absolute inset-0 h-full w-full object-cover saturate-[1.35] contrast-[1.25]';
+
+function useHeroVideo() {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(VIDEO_QUERY);
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+    const update = () => setEnabled(mq.matches && !saveData);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+  return enabled;
+}
+
 const Hero = memo(() => {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const videoEnabled = useHeroVideo();
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(id);
@@ -42,28 +63,41 @@ const Hero = memo(() => {
     <section
       id="home"
       ref={sectionRef}
-      className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-24 pb-20 md:pt-32 md:pb-28 lg:pt-40 lg:pb-32"
+      className="relative overflow-hidden bg-[#071123] bg-gradient-to-br from-[#071123] via-[#0c1838] to-[#1b1145] pt-24 pb-20 md:pt-32 md:pb-28 lg:pt-40 lg:pb-32"
     >
-      {/* VIDEO */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden motion-reduce:hidden" aria-hidden="true">
-        <video
-          className="h-full w-full object-cover opacity-80 filter saturate-[1.35] contrast-[1.25] brightness-[1.15]"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/media/hero-poster.jpg"
-        >
-          <source src="/media/hero-bg.webm" type="video/webm" />
-          <source src="/media/hero-bg.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/25 mix-blend-multiply"></div>
+      {/* FONDO: póster + vídeo (solo escritorio) + velo */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true" data-hero-media>
+        <picture>
+          <source
+            type="image/webp"
+            srcSet="/media/hero-poster-800.webp 800w, /media/hero-poster-1600.webp 1600w"
+            sizes="100vw"
+          />
+          <img src="/media/hero-poster-1600.jpg" alt="" className={`${MEDIA_CLASSES} opacity-80`} decoding="async" />
+        </picture>
+        {videoEnabled && (
+          <video
+            className={`${MEDIA_CLASSES} transition-opacity duration-700 ${videoPlaying ? 'opacity-80' : 'opacity-0'}`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            onPlaying={() => setVideoPlaying(true)}
+          >
+            <source src="/media/hero-bg-720.webm" type="video/webm" />
+            <source src="/media/hero-bg-720.mp4" type="video/mp4" />
+          </video>
+        )}
+        <div className="absolute inset-0 bg-[#071123]/40" data-hero-veil></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(7,17,35,0.5)_0%,rgba(7,17,35,0)_70%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,17,35,0.45)_0%,rgba(7,17,35,0)_28%,rgba(7,17,35,0)_62%,rgba(7,17,35,0.54)_100%)]"></div>
       </div>
 
       <div className="container relative z-10 text-center max-w-5xl mx-auto">
         {/* badge superior */}
-        <div className="arc-pill mb-8 inline-flex items-center gap-3 border-2 border-blue-200 bg-white/60 px-6 py-3 text-base font-semibold text-blue-700 shadow-md">
-          <Lightning size={20} weight="duotone" className="text-blue-600" />
+        <div className="arc-pill mb-8 inline-flex items-center gap-3 border-2 border-white/25 bg-[#071123]/45 backdrop-blur px-6 py-3 text-base font-semibold text-blue-100 shadow-md">
+          <Lightning size={20} weight="duotone" className="text-blue-300" />
           Web · Automatización · Integraciones · IA aplicada
         </div>
 
