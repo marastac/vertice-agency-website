@@ -1,16 +1,14 @@
 // src/config/contact.ts — Datos de contacto centralizados (único lugar a modificar).
 //
-// ⚠️ TODO(ANTES DEL DEPLOY DE LANZAMIENTO): el WhatsApp sigue siendo PROVISIONAL.
-//   - WHATSAPP: +51 999 999 999 es un PLACEHOLDER, no un número real. Sustituir por el número
-//     empresarial definitivo (formato internacional sin "+" ni espacios en WHATSAPP_NUMBER).
+//   - WHATSAPP: número empresarial definitivo de MAASTAC (WHATSAPP_NUMBER sin "+" ni espacios).
 //   - EMAIL: hola@maastac.com es el correo público oficial (reenvío configurado en Namecheap).
 //     No publicar nunca aquí la dirección de destino del reenvío.
 
 /** Número para enlaces wa.me: solo dígitos con prefijo de país (sin "+", sin espacios). */
-export const WHATSAPP_NUMBER = '51999999999'; // TODO(ANTES DEL DEPLOY DE LANZAMIENTO): número definitivo
+export const WHATSAPP_NUMBER = '51940399159';
 
 /** Número tal como se muestra en la web. */
-export const WHATSAPP_DISPLAY = '+51 999 999 999'; // TODO(ANTES DEL DEPLOY DE LANZAMIENTO): número definitivo
+export const WHATSAPP_DISPLAY = '+51 940 399 159';
 
 /** Correo de contacto público. */
 export const CONTACT_EMAIL = 'hola@maastac.com';
