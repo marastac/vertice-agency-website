@@ -141,6 +141,8 @@ const Contact = memo(() => {
             company: formData.company,
             interest: formData.interest,
             message: formData.message,
+            // Asunto de la notificación de Formspree (campo "subject" admitido por Formspree).
+            subject: 'Nueva solicitud de evaluación — MAASTAC',
             form_name: 'Evaluación Gratuita',
             source: 'MAASTAC Website',
             timestamp: new Date().toISOString(),
