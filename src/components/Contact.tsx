@@ -125,7 +125,7 @@ const Contact = memo(() => {
       setSubmitStatus('idle');
 
       try {
-        const FORMSPREE_URL = 'https://formspree.io/f/mdkzjjez';
+        const FORMSPREE_URL = 'https://formspree.io/f/xvkzpjzb';
         const utm = getLightUTM();
 
         const response = await fetch(FORMSPREE_URL, {
