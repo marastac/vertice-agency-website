@@ -5,10 +5,10 @@
 //     No publicar nunca aquí la dirección de destino del reenvío.
 
 /** Número para enlaces wa.me: solo dígitos con prefijo de país (sin "+", sin espacios). */
-export const WHATSAPP_NUMBER = '51940399159';
+export const WHATSAPP_NUMBER = '51940399156';
 
 /** Número tal como se muestra en la web. */
-export const WHATSAPP_DISPLAY = '+51 940 399 159';
+export const WHATSAPP_DISPLAY = '+51 940 399 156';
 
 /** Correo de contacto público. */
 export const CONTACT_EMAIL = 'hola@maastac.com';
