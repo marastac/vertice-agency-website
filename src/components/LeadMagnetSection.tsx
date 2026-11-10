@@ -1,5 +1,6 @@
 // src/components/LeadMagnetSection.tsx
 import { useState, memo, useCallback, useEffect, useRef } from 'react';
+import { fbqEvent, gtagEvent } from '../utils/analytics';
 import {
   ShieldCheck,
   Prohibit,
@@ -140,17 +141,17 @@ const LeadMagnetModal = memo(({ magnet, isOpen, onClose }: LeadMagnetModalProps)
       if (response.ok) {
         setSubmitStatus('success');
 
-        (window as any)?.gtag?.('event', 'form_submit', {
+        gtagEvent('form_submit', {
           form_id: 'lead_magnet',
           magnet_id: magnet.id,
           magnet_title: magnet.title
         });
-        (window as any)?.gtag?.('event', 'generate_lead', { value: 1, currency: 'USD', method: 'lead_magnet' });
-        (window as any)?.gtag?.('event', 'download', {
+        gtagEvent('generate_lead', { value: 1, currency: 'USD', method: 'lead_magnet' });
+        gtagEvent('download', {
           file_name: magnet.title, file_type: magnet.fileType, content_group1: 'Lead Magnet', value: 75
         });
-        (window as any)?.fbq?.('track', 'Lead', { content_name: magnet.title, content_category: 'Lead Magnet', value: 1, currency: 'USD' });
-        (window as any)?.fbqq?.('track', 'CompleteRegistration', { content_name: magnet.title, content_category: 'Lead Magnet', value: 75, currency: 'USD' });
+        fbqEvent('track', 'Lead', { content_name: magnet.title, content_category: 'Lead Magnet', value: 1, currency: 'USD' });
+        // (Eliminada una llamada a `window.fbqq`, errata que nunca existía: era una no-operación.)
 
         setTimeout(() => {
           const link = document.createElement('a');
@@ -402,7 +403,7 @@ const LeadMagnetSection = memo(() => {
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            (window as any)?.gtag?.('event', 'view_item_list', {
+            gtagEvent('view_item_list', {
               item_list_name: 'lead_magnets',
               section: 'recursos'
             });
@@ -417,7 +418,7 @@ const LeadMagnetSection = memo(() => {
 
   const openModal = useCallback((magnet: LeadMagnet) => {
     setSelectedMagnet(magnet);
-    (window as any)?.gtag?.('event', 'view_item', {
+    gtagEvent('view_item', {
       item_id: magnet.id,
       item_name: magnet.title,
       item_category: 'Lead Magnet'

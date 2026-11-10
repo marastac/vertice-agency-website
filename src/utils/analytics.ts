@@ -1,14 +1,18 @@
 // src/utils/analytics.ts — GA4 y Meta Pixel cargados SOLO con consentimiento (ver src/consent/consent.ts)
 import { CONSENT_EVENT, readConsent } from '../consent/consent';
+import { isProductionHost } from '../config/environment';
 import type { ConsentChange, ConsentState } from '../consent/consent';
 
-// Tipos globales
+// Tipos globales (única declaración para toda la web).
+// Las funciones de los trackers aceptan argumentos variables cuyo contenido no usamos: `unknown[]`.
+export type TrackerFn = (...args: unknown[]) => void;
+
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    fbq?: (...args: any[]) => void;
-    lintrk?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: TrackerFn;
+    fbq?: TrackerFn;
+    lintrk?: TrackerFn;
+    dataLayer?: unknown[];
     _linkedin_partner_id?: string;
     _linkedin_data_partner_ids?: string[];
     __analytics_initialized?: boolean;
@@ -19,7 +23,7 @@ declare global {
 
 // 🎯 Configuración (Vite-safe)
 const getMode = () => {
-  try { return (import.meta as any)?.env?.MODE || 'production'; } catch { return 'production'; }
+  try { return import.meta.env?.MODE || 'production'; } catch { return 'production'; }
 };
 const ANALYTICS_CONFIG = {
   GA_MEASUREMENT_ID: 'G-YN77ENMF5B',
@@ -47,6 +51,7 @@ const loadScriptAsync = (src: string, id?: string): Promise<void> => {
 // 📊 Google Analytics 4 — SOLO se llama con consentimiento analítico (ver initAnalytics).
 export const initGA4 = async (measurementId: string = ANALYTICS_CONFIG.GA_MEASUREMENT_ID) => {
   try {
+    if (!isProductionHost()) return; // solo en maastac.com (nunca en local ni en vistas previas)
     if (!measurementId || window.__ga4_loaded) return; // evita inicializaciones duplicadas
     window.__ga4_loaded = true;
 
@@ -89,6 +94,7 @@ type FbqStub = ((...args: unknown[]) => void) & {
 
 export const initFacebookPixel = async (pixelId: string = ANALYTICS_CONFIG.FB_PIXEL_ID) => {
   try {
+    if (!isProductionHost()) return; // solo en maastac.com (nunca en local ni en vistas previas)
     if (!pixelId || window.__fb_loaded || typeof window.fbq === 'function') return; // sin duplicados
     window.__fb_loaded = true;
 
@@ -135,17 +141,52 @@ export const initLinkedInInsight = async (partnerId: string = ANALYTICS_CONFIG.L
   }
 };
 
-// 🎯 Evento analítico (solo GA4; no hace nada sin consentimiento analítico porque gtag no existe).
+// 🔒 Minimización: en los eventos propios solo se envía la ruta (sin dominio, query string ni hash),
+// para no reenviar a terceros parámetros de URL (utm, fbclid u otros) ni fragmentos.
+export const currentPagePath = (): string => {
+  try { return window.location.pathname; } catch { return 'unknown'; }
+};
+
+// 🔐 Consentimiento analítico vigente, en memoria. Se actualiza en cada decisión (CONSENT_EVENT), que
+// consent.ts emite ANTES de aplicar la revocación y recargar. Así, al retirar el permiso, los eventos
+// propios quedan bloqueados de inmediato, incluidos los que se disparan al salir de la página
+// (beforeunload, visibilitychange/pagehide de Web Vitals). Sin estado en memoria se usa el guardado.
+let analyticsGranted: boolean | null = null;
+export const isAnalyticsAllowed = (): boolean => analyticsGranted ?? readConsent()?.analytics === true;
+
+/**
+ * Punto único para los eventos analíticos propios hacia GA4: solo se envían con consentimiento analítico
+ * vigente. Las llamadas técnicas de Consent Mode (gtag('consent', …)) no pasan por aquí.
+ */
+export const gtagEvent = (eventName: string, params?: Record<string, unknown>) => {
+  if (!isAnalyticsAllowed()) return;
+  window.gtag?.('event', eventName, params);
+};
+
+// 🔐 Consentimiento de marketing vigente, en memoria (mismo mecanismo que el analítico e independiente de él).
+let marketingGranted: boolean | null = null;
+export const isMarketingAllowed = (): boolean => marketingGranted ?? readConsent()?.marketing === true;
+
+/**
+ * Punto único para los eventos propios hacia Meta Pixel: solo se envían con consentimiento de marketing
+ * vigente. Las llamadas técnicas (fbq('consent', …), fbq('init', …) y el PageView de inicialización) no
+ * pasan por aquí.
+ */
+export const fbqEvent = (method: 'track' | 'trackCustom', eventName: string, params?: Record<string, unknown>) => {
+  if (!isMarketingAllowed()) return;
+  window.fbq?.(method, eventName, params);
+};
+
+// 🎯 Evento analítico (solo GA4 y solo con consentimiento analítico vigente).
 // Meta Pixel ya NO recibe estos eventos: solo recibe PageView, Lead (gracias.html) y ServiceCTA.
-export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
-  if (typeof window === 'undefined') return;
+export const trackEvent = (eventName: string, parameters?: Record<string, unknown>) => {
+  if (typeof window === 'undefined' || !isAnalyticsAllowed()) return;
   const eventData = {
     ...parameters,
-    timestamp: Date.now(),
-    page_url: window.location.href,
+    page_path: currentPagePath(),
     page_title: document.title,
   };
-  window.gtag?.('event', eventName, eventData);
+  gtagEvent(eventName, eventData);
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Event:', eventName, eventData);
 };
 
@@ -153,10 +194,10 @@ export const trackEvent = (eventName: string, parameters?: Record<string, any>) 
 // mayor que los 400 ms de la redirección, que lo descartaba siempre). GA4 agrupa eventos antes de
 // enviarlos, así que la conversión de referencia es `generate_lead` en /gracias.html.
 // El Lead de Meta se envía una sola vez desde /gracias.html (si hay consentimiento de marketing).
-export const trackFormSubmission = (formType: string, additionalData?: Record<string, any>) => {
-  window.gtag?.('event', 'form_submit', {
+export const trackFormSubmission = (formType: string, additionalData?: Record<string, unknown>) => {
+  gtagEvent('form_submit', {
     form_type: formType,
-    page_location: window.location.href,
+    page_path: currentPagePath(),
     page_title: document.title,
     // Sin valor monetario: no asignamos valores ficticios a un formulario hasta tener datos comerciales reales.
     ...additionalData,
@@ -165,9 +206,10 @@ export const trackFormSubmission = (formType: string, additionalData?: Record<st
 };
 
 // 🖱️ Clicks (idle)
-export const trackButtonClick = (buttonName: string, location: string, additionalData?: Record<string, any>) => {
+export const trackButtonClick = (buttonName: string, location: string, additionalData?: Record<string, unknown>) => {
   const run = () => trackEvent('button_click', { button_name: buttonName, click_location: location, ...additionalData });
-  (window as any).requestIdleCallback ? (window as any).requestIdleCallback(run) : setTimeout(run, 0);
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run);
+  else setTimeout(run, 0);
 };
 
 // 📏 Scroll depth con thresholds
@@ -216,14 +258,12 @@ export const measurePerformance = () => {
           dom_content_loaded: Math.round(p.domContentLoadedEventEnd - p.startTime),
           first_paint: Math.round(p.responseEnd - p.startTime),
           ttfb: Math.round(p.responseStart - p.startTime),
-          page_url: window.location.href,
-          connection_type: (navigator as any).connection?.effectiveType || 'unknown',
         };
         trackEvent('page_performance', data);
 
         const paints = performance.getEntriesByType('paint');
-        paints.forEach((entry: any) => {
-          trackEvent('core_web_vitals', { metric_name: entry.name, metric_value: Math.round(entry.startTime), page_url: window.location.href });
+        paints.forEach((entry: PerformanceEntry) => {
+          trackEvent('core_web_vitals', { metric_name: entry.name, metric_value: Math.round(entry.startTime) });
         });
       }
     }, 1000);
@@ -231,19 +271,23 @@ export const measurePerformance = () => {
 };
 
 // 💰 Conversiones
-export const trackConversion = (type: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, extra?: Record<string, any>) => {
+export const trackConversion = (type: 'lead' | 'newsletter' | 'download' | 'contact', value?: number, extra?: Record<string, unknown>) => {
   // 'contact' no tiene valor por defecto (sin valores ficticios); solo se envía value/currency si hay valor.
   const v = value ?? (type === 'contact' ? undefined : type === 'download' ? 75 : 50);
-  window.gtag?.('event', 'conversion', { conversion_type: type, ...(v !== undefined ? { value: v, currency: 'USD' } : {}), ...extra });
+  gtagEvent('conversion', { conversion_type: type, ...(v !== undefined ? { value: v, currency: 'USD' } : {}), ...extra });
   if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('💰 Conversion:', type, { value: v, ...extra });
 };
 
-// 🚨 Errores
-export const trackError = (error: any, context?: string, extra?: Record<string, any>) => {
-  const msg = error?.message || String(error);
-  const stack = (error?.stack || '').toString().slice(0, 500);
-  trackEvent('javascript_error', { error_message: msg, error_stack: stack, context: context || 'unknown', user_agent: navigator.userAgent, ...extra });
-  if (ANALYTICS_CONFIG.DEBUG_MODE) console.error('🚨 Error tracked:', error, context, extra);
+// 🚨 Errores — minimizado: solo el TIPO de error (p. ej. "TypeError") y el contexto.
+// No se envían el mensaje, la traza ni el user agent: pueden contener URLs, datos del formulario u
+// otra información personal. El detalle completo solo se muestra en la consola en modo desarrollo.
+const errorType = (error: unknown): string => {
+  if (error instanceof Error && error.name) return error.name.slice(0, 40);
+  return typeof error === 'string' ? 'message' : 'unknown';
+};
+export const trackError = (error: unknown, context?: string) => {
+  trackEvent('javascript_error', { error_type: errorType(error), context: context || 'unknown' });
+  if (ANALYTICS_CONFIG.DEBUG_MODE) console.error('🚨 Error tracked:', error, context);
 };
 
 // 🧠 Interacciones avanzadas
@@ -257,30 +301,22 @@ export const setupAdvancedTracking = () => {
       const ctaText = el.textContent?.trim();
       trackButtonClick(ctaName, getPageSection(el), { cta_text: ctaText, element_type: el.tagName.toLowerCase() });
     }
-    // Enlaces externos
+    // Enlaces externos — solo el dominio de destino (sin URL completa ni texto del enlace).
     const link = target.closest?.('a') as HTMLAnchorElement | null;
-    if (link && link.hostname !== window.location.hostname) {
-      trackEvent('external_link_click', { link_url: link.href, link_text: link.textContent?.trim(), target_domain: link.hostname });
+    if (link && link.hostname && link.hostname !== window.location.hostname) {
+      trackEvent('external_link_click', { target_domain: link.hostname });
     }
   };
   document.addEventListener('click', onClick);
 
-  // Focus de campos
-  const onFocus = (e: Event) => {
-    const t = e.target as HTMLElement;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) {
-      const formName = t.closest('form')?.getAttribute('data-form-name') || 'unknown';
-      const fieldName = t.getAttribute('name') || t.id || 'unknown_field';
-      trackEvent('form_field_focus', { form_name: formName, field_name: fieldName, field_type: t.getAttribute('type') || t.tagName.toLowerCase() });
-    }
-  };
-  document.addEventListener('focusin', onFocus);
+  // Foco en campos de formulario: ELIMINADO (minimización). No se mide la interacción campo a campo
+  // y nunca se envían valores introducidos por el usuario.
 
-  // Videos
+  // Videos (solo el título si existe; sin la URL del archivo)
   const onPlay = (e: Event) => {
     const v = e.target as HTMLVideoElement;
     if (v && v.tagName === 'VIDEO') {
-      trackEvent('video_play', { video_title: v.title || v.src, video_duration: v.duration, video_current_time: v.currentTime });
+      trackEvent('video_play', { video_title: v.title || 'untitled' });
     }
   };
   document.addEventListener('play', onPlay, true);
@@ -296,7 +332,6 @@ export const setupAdvancedTracking = () => {
   // Cleanup opcional (si alguna vez lo necesitas)
   return () => {
     document.removeEventListener('click', onClick);
-    document.removeEventListener('focusin', onFocus);
     document.removeEventListener('play', onPlay, true);
     window.removeEventListener('beforeunload', onUnload);
   };
@@ -325,6 +360,8 @@ const startBehaviorTracking = () => {
 /** Carga únicamente los trackers autorizados por la preferencia indicada. */
 const applyConsent = (consent: ConsentState | null) => {
   if (!consent) return; // sin decisión: no se carga nada
+  analyticsGranted = consent.analytics; // también bloquea al instante los eventos propios si se retira
+  marketingGranted = consent.marketing; // ídem para Meta (categoría independiente)
   if (consent.analytics) {
     void initGA4();
     startBehaviorTracking();
@@ -340,6 +377,12 @@ const applyConsent = (consent: ConsentState | null) => {
 export const initAnalytics = () => {
   if (window.__analytics_initialized) return;
   window.__analytics_initialized = true;
+
+  // Protección por dominio: fuera de maastac.com no se carga ningún tracker ni se envía ningún evento.
+  if (!isProductionHost()) {
+    if (ANALYTICS_CONFIG.DEBUG_MODE) console.log('📊 Analytics desactivado: dominio que no es de producción');
+    return;
+  }
 
   applyConsent(readConsent());
   window.addEventListener(CONSENT_EVENT, (e) => applyConsent((e as CustomEvent<ConsentChange>).detail.current));

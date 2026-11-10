@@ -1,274 +1,175 @@
-// src/components/Footer.tsx
-import { memo, useCallback } from 'react';
+// src/components/Footer.tsx — Pie de página con enlaces rastreables a todas las páginas.
+import { memo } from 'react';
+import { EnvelopeSimple, MapPin, WhatsappLogo } from 'phosphor-react';
 import { CONTACT_EMAIL, WHATSAPP_DISPLAY, whatsappUrl } from '../config/contact';
 import { openCookieSettings } from '../consent/consent';
-
-// Mejora visual: íconos Phosphor consistentes (reemplazan emojis)
-import {
-  EnvelopeSimple,
-  DeviceMobile,
-  GlobeHemisphereWest,
-  Heart,
-} from 'phosphor-react';
+import { AREAS } from '../content/areas';
+import { gtagEvent } from '../utils/analytics';
+import { trackContactClick, trackEmailClick, trackWhatsAppClick } from '../utils/events';
 
 // Redes sociales: se añadirán cuando existan perfiles reales (no mostrar enlaces vacíos).
+// TODO(ANTES DEL LANZAMIENTO): las páginas legales siguen siendo borradores (noindex) hasta su revisión legal.
+const LEGAL_LINKS = [
+  { txt: 'Política de Privacidad', href: '/privacidad' },
+  { txt: 'Términos de Servicio', href: '/terminos' },
+  { txt: 'Cookies', href: '/cookies' },
+  { txt: 'Aviso Legal', href: '/aviso-legal' },
+];
+
+const COMPANY_LINKS = [
+  { name: 'Lead AI', href: '/lead-ai' },
+  { name: 'Soluciones', href: '/soluciones' },
+  { name: 'Cómo trabajamos', href: '/#como-trabajamos' },
+  { name: 'Nosotros', href: '/nosotros' },
+  { name: 'Contacto', href: '/contacto' },
+];
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+const trackFooter = (contentType: string, itemId: string) =>
+  gtagEvent('select_content', { content_type: contentType, item_id: itemId, section: 'footer' });
+
+const linkClass = 'text-slate-400 transition-colors hover:text-white';
 
 const Footer = memo(() => {
-  const scrollToSection = useCallback((sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
-    // Fuera de la home (páginas legales, 404) la sección no existe: navegar a /#seccion.
-    else window.location.href = `/#${sectionId}`;
-  }, []);
-
-  const currentYear = new Date().getFullYear();
-
-  const services = [
-    { name: 'Web & Conversión', id: 'servicios' },
-    { name: 'Automatización & IA', id: 'servicios' },
-    { name: 'Sistemas & Integraciones', id: 'servicios' },
-    { name: 'Lead AI', id: 'lead-ai' },
-  ];
-
-  const quickLinks = [
-    { name: 'Servicios', id: 'servicios' },
-    { name: 'Cómo trabajamos', id: 'como-trabajamos' },
-    { name: 'Capacidades', id: 'capacidades' },
-    { name: 'Nosotros', id: 'nosotros' },
-    { name: 'Contacto', id: 'contact' },
-  ];
-
   return (
-    <footer className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white overflow-hidden">
-      {/* Elementos decorativos */}
-      <div
-        className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-l from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-2xl"
-        aria-hidden="true"
-      />
+    <footer className="bg-ink text-white" aria-labelledby="footer-title">
+      <h2 id="footer-title" className="sr-only">
+        Pie de página
+      </h2>
+      <div className="container py-14 md:py-16">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+          <div>
+            <img
+              src="/brand/maastac-logo-horizontal-white-800.png"
+              srcSet="/brand/maastac-logo-horizontal-white-800.png 800w, /brand/maastac-logo-horizontal-white.png 1476w"
+              sizes="200px"
+              alt="MAASTAC"
+              width={800}
+              height={160}
+              loading="lazy"
+              decoding="async"
+              className="mb-5 h-9 w-auto select-none"
+            />
+            <p className="max-w-sm leading-relaxed text-slate-400">
+              Agencia tecnológica B2B. Desarrollamos software a medida, automatizamos procesos, integramos herramientas y
+              aplicamos inteligencia artificial a problemas reales de negocio.
+            </p>
+            <p className="mt-5 inline-flex items-center gap-2 text-sm text-slate-400">
+              <MapPin size={16} weight="duotone" className="text-sky-300" aria-hidden="true" />
+              Lima, Perú · atención remota
+            </p>
+          </div>
 
-      <div className="relative">
-        {/* Main Footer Content */}
-        <div className="py-16">
-          <div className="container">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-              {/* Logo y descripción */}
-              <div className="lg:col-span-2">
-                {/* Logo MAASTAC (blanco, sobre el fondo oscuro del footer). Proporción real 5:1 (800×160 / 1476×296). */}
-                <img
-                  src="/brand/maastac-logo-horizontal-white-800.png"
-                  srcSet="/brand/maastac-logo-horizontal-white-800.png 800w, /brand/maastac-logo-horizontal-white.png 1476w"
-                  sizes="(min-width: 768px) 240px, 200px"
-                  alt="MAASTAC"
-                  width={800}
-                  height={160}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-10 md:h-12 w-auto max-w-full mb-6 select-none"
-                />
-                <p className="text-blue-100 mb-6 max-w-md leading-relaxed">
-                  Automatización, desarrollo web e integraciones para empresas y negocios digitales. Construimos sistemas
-                  que reducen el trabajo manual y ayudan a captar y gestionar clientes.
-                </p>
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-slate-300">Servicios</h3>
+            <ul className="space-y-3">
+              {AREAS.map((area) => (
+                <li key={area.id}>
+                  <a
+                    href={area.path}
+                    className={linkClass}
+                    data-cta={`footer_service_${area.id}`}
+                    onClick={() => trackFooter('service_link', area.id)}
+                  >
+                    {area.name}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href="/#servicios" className={linkClass} data-cta="footer_service_todos" onClick={() => trackFooter('service_link', 'todos')}>
+                  Todos los servicios
+                </a>
+              </li>
+            </ul>
+          </div>
 
-                {/* Áreas (sustituye a los badges de certificaciones, que no tenemos) */}
-                <div className="flex flex-wrap gap-3">
-                  {['Automatización', 'Desarrollo web', 'Integraciones'].map((area) => (
-                    <div key={area} className="bg-white/10 px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">
-                      {area}
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-slate-300">Empresa</h3>
+            <ul className="space-y-3">
+              {COMPANY_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className={linkClass}
+                    data-cta={`footer_quicklink_${slug(link.name)}`}
+                    onClick={() => trackFooter('quicklink', slug(link.name))}
+                  >
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-              {/* Enlaces rápidos */}
-              <div>
-                <h3 className="text-lg font-bold mb-6 text-white">Enlaces Rápidos</h3>
-                <ul className="space-y-3">
-                  {quickLinks.map((link) => (
-                    <li key={link.name}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          (window as any)?.gtag?.('event', 'select_content', {
-                            content_type: 'quicklink',
-                            item_id: link.id.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                            section: 'footer',
-                          });
-                          scrollToSection(link.id);
-                        }}
-                        className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block"
-                        data-cta={`footer_quicklink_${link.id.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
-                        aria-label={`Ir a ${link.name}`}
-                      >
-                        {link.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Servicios */}
-              <div>
-                <h3 className="text-lg font-bold mb-6 text-white">Servicios</h3>
-                <ul className="space-y-3">
-                  {services.map((service) => (
-                    <li key={service.name}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          (window as any)?.gtag?.('event', 'select_content', {
-                            content_type: 'service_link',
-                            item_id: service.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                            section: 'footer',
-                          });
-                          scrollToSection(service.id);
-                        }}
-                        className="text-blue-100 hover:text-white transition-colors duration-300 hover:translate-x-2 transform inline-block text-left"
-                        data-cta={`footer_service_${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`}
-                        aria-label={`Ver servicio: ${service.name}`}
-                      >
-                        {service.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Contacto */}
-              <div>
-                <h3 className="text-lg font-bold mb-6 text-white">Contacto</h3>
-                <ul className="space-y-4">
-                  {/* Email */}
-                  <li className="flex items-start gap-3 text-blue-100">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {/* Mejora visual: ícono de sobre (Phosphor) */}
-                      <EnvelopeSimple size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">Email</div>
-                      {/* Datos de contacto centralizados en src/config/contact.ts */}
-                      <a
-                        href={`mailto:${CONTACT_EMAIL}`}
-                        className="hover:text-white transition-colors break-words"
-                        data-cta="footer_email"
-                      >
-                        {CONTACT_EMAIL}
-                      </a>
-                    </div>
-                  </li>
-
-                  {/* WhatsApp */}
-                  <li className="flex items-start gap-3 text-blue-100">
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {/* Mejora visual: ícono de móvil (Phosphor) */}
-                      <DeviceMobile size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">WhatsApp</div>
-                      <a
-                        href={whatsappUrl()}
-                        className="hover:text-white transition-colors"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-cta="footer_whatsapp"
-                        onClick={() => {
-                          (window as any)?.gtag?.('event', 'whatsapp_click', {
-                            location: 'footer',
-                          });
-                        }}
-                      >
-                        {WHATSAPP_DISPLAY}
-                      </a>
-                    </div>
-                  </li>
-
-                  {/* Cobertura */}
-                  <li className="flex items-start gap-3 text-blue-100">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {/* Mejora visual: ícono de globo (Phosphor) */}
-                      <GlobeHemisphereWest size={16} weight="duotone" color="#FFFFFF" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">Atención remota</div>
-                      <span>Perú · España · Estados Unidos</span>
-                    </div>
-                  </li>
-                </ul>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    (window as any)?.gtag?.('event', 'select_content', {
-                      content_type: 'cta',
-                      item_id: 'footer_auditoria',
-                    });
-                    scrollToSection('contact');
-                  }}
-                  className="mt-6 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  data-cta="footer_auditoria"
-                  aria-label="Ir a la sección de contacto para solicitar una evaluación gratuita"
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-slate-300">Contacto</h3>
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href={whatsappUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 text-slate-300 transition-colors hover:text-white"
+                  data-cta="footer_whatsapp"
+                  onClick={() => trackWhatsAppClick('footer')}
                 >
-                  Solicitar evaluación
-                </button>
-              </div>
-            </div>
+                  <WhatsappLogo size={18} weight="duotone" className="text-emerald-300" aria-hidden="true" />
+                  {WHATSAPP_DISPLAY}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="inline-flex items-center gap-2.5 break-all text-slate-300 transition-colors hover:text-white"
+                  data-cta="footer_email"
+                  onClick={() => trackEmailClick('footer')}
+                >
+                  <EnvelopeSimple size={18} weight="duotone" className="text-sky-300" aria-hidden="true" />
+                  {CONTACT_EMAIL}
+                </a>
+              </li>
+            </ul>
+            <a
+              href="/contacto"
+              className="mt-6 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 font-semibold text-white transition-colors hover:from-blue-500 hover:to-violet-500"
+              data-cta="footer_auditoria"
+              onClick={() => trackContactClick('footer_auditoria', 'footer')}
+            >
+              Solicitar evaluación gratuita
+            </a>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-white/10 py-8">
-          <div className="container">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="text-blue-200 text-sm">
-                © {currentYear} MAASTAC. Todos los derechos reservados.
-              </div>
-
-              <div className="flex flex-wrap gap-6 text-sm">
-                {/* TODO(ANTES DEL LANZAMIENTO): las páginas legales son borradores sin datos del titular. */}
-                {[
-                  { txt: 'Política de Privacidad', href: '/privacidad' },
-                  { txt: 'Términos de Servicio', href: '/terminos' },
-                  { txt: 'Cookies', href: '/cookies' },
-                  { txt: 'Aviso Legal', href: '/aviso-legal' },
-                ].map(({ txt, href }) => (
-                  <a
-                    key={txt}
-                    href={href}
-                    className="text-blue-200 hover:text-white transition-colors duration-300"
-                    data-cta={`footer_policy_${txt.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`}
-                    onClick={() => {
-                      (window as any)?.gtag?.('event', 'select_content', {
-                        content_type: 'policy',
-                        item_id: txt.toLowerCase().replace(/[^a-z0-9]+/g,'_'),
-                        section: 'footer',
-                      });
-                    }}
-                  >
-                    {txt}
-                  </a>
-                ))}
-                <button
-                  type="button"
-                  onClick={openCookieSettings}
-                  className="text-blue-200 hover:text-white transition-colors duration-300"
-                  data-cta="footer_cookie_settings"
+      <div className="border-t border-white/10">
+        <div className="container flex flex-col gap-4 py-6 text-sm md:flex-row md:items-center md:justify-between">
+          <p className="text-slate-500">
+            © <span suppressHydrationWarning>{new Date().getFullYear()}</span> MAASTAC. Todos los derechos reservados.
+          </p>
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {LEGAL_LINKS.map(({ txt, href }) => (
+              <li key={href}>
+                <a
+                  href={href}
+                  className="text-slate-500 transition-colors hover:text-white"
+                  data-cta={`footer_policy_${slug(txt)}`}
+                  onClick={() => trackFooter('policy', slug(txt))}
                 >
-                  Configurar cookies
-                </button>
-              </div>
-
-              <div className="text-blue-200 text-sm inline-flex items-center gap-2 whitespace-nowrap">
-                Hecho con
-                {/* Mejora visual: corazón Phosphor en lugar de emoji */}
-                <Heart size={16} weight="duotone" className="text-pink-300" aria-hidden="true" />
-                por MAASTAC
-              </div>
-            </div>
-          </div>
+                  {txt}
+                </a>
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                onClick={openCookieSettings}
+                className="text-slate-500 transition-colors hover:text-white"
+                data-cta="footer_cookie_settings"
+              >
+                Configurar cookies
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

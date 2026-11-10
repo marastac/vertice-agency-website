@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Archivos temporales de Office (bloqueo de documentos abiertos)
+~$*

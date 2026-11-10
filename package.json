@@ -8,7 +8,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build:client": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -16,7 +17,7 @@
     "type-check": "tsc -b",
     "build:analyze": "vite build --mode analyze",
     "serve": "vite preview --port 3000",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist-ssr",
     "prepare": "husky install"
   },
   "dependencies": {

@@ -3,7 +3,6 @@
 import { openCookieSettings } from '../consent/consent';
 import { COOKIE_INVENTORY, LEGAL_PAGES } from './legalContent';
 import type { Block, Inline, LegalPageDef } from './legalContent';
-import { usePageMeta } from './usePageMeta';
 
 function InlineText({ content }: { content: Inline[] }) {
   return (
@@ -77,7 +76,7 @@ function BlockView({ block }: { block: Block }) {
         <button
           type="button"
           onClick={openCookieSettings}
-          className="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 font-semibold text-white hover:shadow-lg"
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 font-semibold text-white hover:shadow-lg"
         >
           Configurar cookies
         </button>
@@ -86,11 +85,11 @@ function BlockView({ block }: { block: Block }) {
 }
 
 export default function LegalPage({ page }: { page: LegalPageDef }) {
-  usePageMeta(`${page.title} | MAASTAC`, page.draft ? 'noindex,follow' : undefined);
+  // Título y robots (noindex,follow en borradores) van en el HTML prerenderizado (src/seo/head.ts).
   const pendingCount = page.sections.filter((s) => s.pending).length;
 
   return (
-    <main className="bg-white pt-28 pb-20 md:pt-36">
+    <div className="bg-white pt-28 pb-20 md:pt-36">
       <article className="container max-w-3xl mx-auto" aria-labelledby="legal-title">
         <h1 id="legal-title" className="text-3xl md:text-4xl font-black text-gray-900 mb-6">
           {page.title}
@@ -154,6 +153,6 @@ export default function LegalPage({ page }: { page: LegalPageDef }) {
           </a>
         </nav>
       </article>
-    </main>
+    </div>
   );
 }

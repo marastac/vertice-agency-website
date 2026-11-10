@@ -58,6 +58,9 @@
         document.head.appendChild(s);
       }
       const consent = readConsent();
+      // Protección por dominio (misma lista que src/config/environment.ts): GA4, Meta y las conversiones
+      // solo se envían en el dominio oficial. En local y en vistas previas de Vercel no se carga nada.
+      const isProduction = ['maastac.com', 'www.maastac.com'].indexOf(location.hostname.toLowerCase()) !== -1;
 
       // ── Conversión de un solo uso: misma clave, formato y TTL que src/utils/leadConversion.ts ──
       // Contact.tsx guarda la marca solo tras un envío correcto a Formspree. Se BORRA aquí antes de enviar
@@ -78,7 +81,7 @@
       const lead = consumeLead(src);
 
       // GA4: SOLO con consentimiento analítico
-      if (consent && consent.analytics === true) {
+      if (isProduction && consent && consent.analytics === true) {
         try {
           window.dataLayer = window.dataLayer || [];
           window.gtag = function () { window.dataLayer.push(arguments); };
@@ -97,7 +100,7 @@
       }
 
       // Meta Pixel: SOLO con consentimiento de marketing
-      if (consent && consent.marketing === true) {
+      if (isProduction && consent && consent.marketing === true) {
         try {
           const n = window.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
           if (!window._fbq) window._fbq = n;

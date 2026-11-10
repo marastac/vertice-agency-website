@@ -2,6 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    { "source": "/software", "destination": "/software/a-medida", "permanent": false },
+    { "source": "/contact", "destination": "/contacto", "permanent": false },
+    { "source": "/about", "destination": "/nosotros", "permanent": false },
+    { "source": "/services", "destination": "/#servicios", "permanent": false },
+    { "source": "/servicios", "destination": "/#servicios", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
