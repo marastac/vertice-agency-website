@@ -18,6 +18,7 @@ import { LEGAL_PAGES } from './pages/legalContent';
 import { HASH_ALIASES, matchRoute } from './routes';
 import type { RouteDef } from './routes';
 import { initAnalytics } from './utils/analytics';
+import { initClickPulse } from './utils/clickPulse';
 
 function Page({ route }: { route: RouteDef }) {
   switch (route.kind) {
@@ -67,6 +68,9 @@ export default function App({ path }: { path: string }) {
     // GA4 / Meta Pixel se cargan SOLO según el consentimiento guardado (ver src/consent/consent.ts).
     initAnalytics();
   }, []);
+
+  // Pulso visual decorativo al hacer clic con el ratón (solo puntero fino y sin "reducir movimiento").
+  useEffect(() => initClickPulse(), []);
 
   useInitialHashScroll();
 
