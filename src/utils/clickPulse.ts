@@ -7,7 +7,7 @@
 // - Sin estado de React ni requestAnimationFrame: un <span> con una animación CSS (ver .click-pulse en index.css).
 
 const MAX_ACTIVE = 4; // límite de pulsos simultáneos (clics muy rápidos)
-const FALLBACK_MS = 800; // retirada de seguridad si no llega animationend
+const FALLBACK_MS = 1000; // retirada de seguridad si no llega animationend (la animación dura 600 ms)
 
 export function initClickPulse(): () => void {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
